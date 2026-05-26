@@ -61,3 +61,4 @@ endfunction()
 
 add_ace_lab(lab0)
 add_ace_lab(lab1)
+add_ace_lab(lab2)
