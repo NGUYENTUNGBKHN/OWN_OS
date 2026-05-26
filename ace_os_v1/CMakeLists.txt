@@ -25,15 +25,22 @@ set(COMMON_COMPILE_OPTIONS
 )
 
 function(add_ace_lab LAB_NAME)
+    file(GLOB APP_C_SRC      "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/*.c")
+    file(GLOB APP_ASM_S_SRC  "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/*.S")
+
     add_executable(${LAB_NAME}.elf
         common/startup_stm32f746.c
         common/system_stm32f746.c
         common/itm.c
         common/syscalls.c
-        ${LAB_NAME}/main.c
+        ${APP_C_SRC}
+        ${APP_ASM_S_SRC}
     )
 
-    target_include_directories(${LAB_NAME}.elf PRIVATE common)
+    target_include_directories(${LAB_NAME}.elf PRIVATE 
+        common
+        "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}"
+    )
     target_compile_options(${LAB_NAME}.elf PRIVATE ${COMMON_COMPILE_OPTIONS})
     target_link_options(${LAB_NAME}.elf PRIVATE
         ${MCU_FLAGS}
