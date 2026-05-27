@@ -7,6 +7,56 @@
 
 #define SCB_CPACR REG32(0xE000ED88UL)
 
+#define SYSTICK_BASE 0xE000E010UL
+#define SYSTICK_CTRL REG32(SYSTICK_BASE + 0x00UL)
+#define SYSTICK_LOAD REG32(SYSTICK_BASE + 0x04UL)
+#define SYSTICK_VAL REG32(SYSTICK_BASE + 0x08UL)
+
+#define SYSTICK_CTRL_ENABLE (1UL << 0)
+#define SYSTICK_CTRL_TICKINT (1UL << 1)
+#define SYSTICK_CTRL_CLKSOURCE (1UL << 2)
+
+#define RCC_BASE 0x40023800UL
+#define RCC_CR REG32(RCC_BASE + 0x00UL)
+#define RCC_PLLCFGR REG32(RCC_BASE + 0x04UL)
+#define RCC_CFGR REG32(RCC_BASE + 0x08UL)
+#define RCC_APB1ENR REG32(RCC_BASE + 0x40UL)
+
+#define RCC_CR_HSION (1UL << 0)
+#define RCC_CR_HSIRDY (1UL << 1)
+#define RCC_CR_PLLON (1UL << 24)
+#define RCC_CR_PLLRDY (1UL << 25)
+
+#define RCC_PLLCFGR_PLLM_Pos 0UL
+#define RCC_PLLCFGR_PLLN_Pos 6UL
+#define RCC_PLLCFGR_PLLP_Pos 16UL
+#define RCC_PLLCFGR_PLLQ_Pos 24UL
+
+#define RCC_CFGR_SW_Pos 0UL
+#define RCC_CFGR_SWS_Pos 2UL
+#define RCC_CFGR_HPRE_Pos 4UL
+#define RCC_CFGR_PPRE1_Pos 10UL
+#define RCC_CFGR_PPRE2_Pos 13UL
+#define RCC_CFGR_SW_PLL 0x2UL
+#define RCC_CFGR_SWS_PLL 0x2UL
+
+#define RCC_APB1ENR_PWREN (1UL << 28)
+
+#define FLASH_BASE 0x40023C00UL
+#define FLASH_ACR REG32(FLASH_BASE + 0x00UL)
+#define FLASH_ACR_LATENCY_Pos 0UL
+#define FLASH_ACR_PRFTEN (1UL << 8)
+#define FLASH_ACR_ARTEN (1UL << 9)
+
+#define PWR_BASE 0x40007000UL
+#define PWR_CR1 REG32(PWR_BASE + 0x00UL)
+#define PWR_CSR1 REG32(PWR_BASE + 0x04UL)
+#define PWR_CR1_VOS_Pos 14UL
+#define PWR_CR1_ODEN (1UL << 16)
+#define PWR_CR1_ODSWEN (1UL << 17)
+#define PWR_CSR1_ODRDY (1UL << 16)
+#define PWR_CSR1_ODSWRDY (1UL << 17)
+
 #define ITM_BASE 0xE0000000UL
 #define ITM_STIM_PORT0 REG32(ITM_BASE + 0x000UL)
 #define ITM_TER REG32(ITM_BASE + 0xE00UL)
@@ -16,6 +66,8 @@
 #define DEMCR_TRCENA (1UL << 24)
 
 void SystemInit(void);
+void SystemClock_Config(void);
+void SysTick_Enable(uint32_t tick_hz);
 int ITM_SendChar(int ch);
 
 #endif

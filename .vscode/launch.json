@@ -132,6 +132,39 @@
                     }
                 ]
             }
+        },
+        {   // ace_os_v1/lab4-Preemptive
+            "name": "ace_os_v1/lab4-Preemptive",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/ace_os_v1/build/lab4.elf", // <--- IMPORTANT: Update this path to your compiled .elf file
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "device": "STM32F746NG", // <--- IMPORTANT: Adjust for your specific F746 part (e.g., STM32F746VG, STM32F746NG, etc.)
+            "svdFile": "${workspaceFolder}/svd/STM32F746x.svd", // <--- IMPORTANT: Path to your SVD file
+            "interface": "swd",
+            "runToEntryPoint": "main", // Start debugging at the 'main' function
+            "configFiles": [
+                "interface/stlink.cfg", // Or stlink-v2.cfg, stlink-v2-1.cfg depending on your ST-Link version
+                "target/stm32f7x.cfg" // Or stm32f7xx.cfg, etc., for your F7 series
+            ],
+            "searchDir": [
+                "D:/openocd-v0.12.0-i686-w64-mingw32/share/openocd/scripts", // IMPORTANT: Point to OpenOCD's 'scripts' directory
+            ],
+            "swoConfig": {
+                "enabled": true,
+                "cpuFrequency": 216000000, // <--- IMPORTANT: Set to your actual CPU frequency in Hz (e.g., 216MHz for F7)
+                // "cpuFrequency": 16000000, 
+                "swoFrequency": 2000000, // SWO trace frequency (adjust if needed)
+                "source": "probe",
+                "decoders": [
+                    {
+                        "type": "console",
+                        "label": "ITM",
+                        "port": 0
+                    }
+                ]
+            }
         }
     ]
 }
