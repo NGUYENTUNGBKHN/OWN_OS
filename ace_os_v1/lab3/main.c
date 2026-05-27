@@ -9,6 +9,18 @@
 */
 #include <stdio.h>
 #include "activate.h"
+
+/* Exception return behavior */
+#define HANDLER_MSP	0xFFFFFFF1
+#define THREAD_MSP	0xFFFFFFF9
+#define THREAD_PSP	0xFFFFFFFD
+
+void task_init()
+{
+    unsigned int empty[32];
+    task_init_env(empty + 32);
+}
+
 /**
  * @brief      User task function
  * 
@@ -19,7 +31,8 @@ void usertask1(void)
     syscall();
     while(1)
     {
-
+        printf("User task 1\n");
+        syscall();
     }
 }
 
@@ -29,24 +42,41 @@ void usertask2(void)
     syscall();
     while(1)
     {
-
+        printf("User task 2\n");
+        syscall();
     }
+}
+
+unsigned int *create_tasks(unsigned int *stack, void (*task_func)(void))
+{
+    unsigned int *res;
+    unsigned int *stack_start = stack + 256 - 17;
+    stack_start[8] = THREAD_PSP; // LR (EXC_RETURN to Thread mode, use PSP)
+    stack_start[15] = (unsigned int)task_func; // PC
+    stack_start[16] = 0x01000000; // xPSR (Thumb state)
+    res = activate(stack_start);
+
+    return res;
 }
 
 int main(void)
 {
     // Simulate user task stack (not used in this simple example)
-    unsigned int usertask_stack[256];
-    // Point to the top of the user task stack
-    unsigned int *usertask_stack_start = usertask_stack + 256 - 16;
-    usertask_stack_start[8] = (unsigned int)usertask1; // Set the return address to usertask
+    unsigned int usertask_stack[2][256];
+    unsigned int *usertask_stack_ptr[2]; // Point to the first task's stack
+    unsigned int current_task = 0; // Index of the current task
 
     printf("ACE OS Lab 3!\n");
-    activate(usertask_stack_start); // Start the user task
-    printf("Back to main\n");
+    task_init();
+    usertask_stack_ptr[0] = create_tasks(usertask_stack[0], usertask1);
+    usertask_stack_ptr[1] = create_tasks(usertask_stack[1], usertask2);
+    
     
     while(1) 
     {
-
+        printf("Switching to user task %d\n", current_task + 1);
+        usertask_stack_ptr[current_task] = activate(usertask_stack_ptr[current_task]); // Activate user task 1
+        printf("Back to main task\n");
+        current_task = (current_task + 1) % 2; // Switch to the next task
     }
 }

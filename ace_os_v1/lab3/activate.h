@@ -11,7 +11,8 @@
 #define ACTIVATE_H  
 
 
-void activate(unsigned int *stack_top);
+unsigned int *activate(unsigned int *stack_top);
 void syscall(void);
+void task_init_env(unsigned int *stack);
 
 #endif /* ACTIVATE_H */
