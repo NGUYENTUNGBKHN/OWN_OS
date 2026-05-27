@@ -1,6 +1,6 @@
 #include "stm32f746.h"
 
-#ifdef LAB4_USE
+#if defined(LAB4_USE) || defined(LAB5_USE)
 uint32_t SystemCoreClock = 216000000UL;
 
 void SystemClock_Config(void)
@@ -51,7 +51,7 @@ void SystemClock_Config(void)
     while (((RCC_CFGR >> RCC_CFGR_SWS_Pos) & 0x3UL) != RCC_CFGR_SWS_PLL) {
     }
 }
-#endif /* LAB4_USE */
+#endif /* LAB4_USE || LAB5_USE */
 
 void SysTick_Enable(uint32_t tick_hz)
 {
@@ -61,11 +61,11 @@ void SysTick_Enable(uint32_t tick_hz)
         return;
     }
 
-#ifdef LAB4_USE
+#if defined(LAB4_USE) || defined(LAB5_USE)
     reload = (SystemCoreClock / tick_hz) - 1U;
 #else
     reload = (16000000UL / tick_hz) - 1U;
-#endif /* LAB4_USE */
+#endif /* LAB4_USE || LAB5_USE */
 
     if (reload > 0x00FFFFFFUL) {
         return;
@@ -82,7 +82,7 @@ void SysTick_Enable(uint32_t tick_hz)
 void SystemInit(void)
 {
     SCB_CPACR |= (0xFUL << 20);
-#ifdef LAB4_USE
+#if defined(LAB4_USE) || defined(LAB5_USE)
     SystemClock_Config();
-#endif /* LAB4_USE */
+#endif /* LAB4_USE || LAB5_USE */
 }
