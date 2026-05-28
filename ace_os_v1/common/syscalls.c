@@ -4,15 +4,27 @@
 
 #include "stm32f746.h"
 
+#if defined(LAB5_USE)
+int UART1_Debug_WriteChar(int ch);
+#endif
+
 int _write(int file, char *ptr, int len)
 {
     (void)file;
 
     for (int i = 0; i < len; ++i) {
         if (ptr[i] == '\n') {
+#if defined(LAB5_USE)
+            UART1_Debug_WriteChar('\r');
+#else
             ITM_SendChar('\r');
+#endif
         }
+#if defined(LAB5_USE)
+        UART1_Debug_WriteChar(ptr[i]);
+#else
         ITM_SendChar(ptr[i]);
+#endif
     }
 
     return len;
