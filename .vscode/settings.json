@@ -31,4 +31,5 @@
         "cstdint": "c"
     },
     "cmake.ignoreCMakeListsMissing": true,
+    "C_Cpp.default.compilerPath": "d:\\Toolchain_2\\bin\\arm-none-eabi-gcc.exe",
 }
