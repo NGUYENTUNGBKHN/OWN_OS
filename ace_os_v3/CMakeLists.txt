@@ -25,8 +25,8 @@ set(COMMON_COMPILE_OPTIONS
 )
 
 function(add_ace_lab LAB_NAME)
-    file(GLOB APP_C_SRC      CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/*.c")
-    file(GLOB APP_ASM_S_SRC  CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/*.S")
+    file(GLOB_RECURSE APP_C_SRC      CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/*.c")
+    file(GLOB_RECURSE APP_ASM_S_SRC  CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/*.S" "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/*.s")
 
     add_executable(${LAB_NAME}.elf
         common/startup_stm32f746.c
@@ -40,6 +40,11 @@ function(add_ace_lab LAB_NAME)
     target_include_directories(${LAB_NAME}.elf PRIVATE 
         common
         "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/cpu"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/cpu/arm/gnu"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/osKernel/config"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/osKernel/impl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/osKernel/port/arm/cortex-m7/gnu"
     )
     target_compile_options(${LAB_NAME}.elf PRIVATE ${COMMON_COMPILE_OPTIONS})
     target_link_options(${LAB_NAME}.elf PRIVATE
@@ -60,3 +65,4 @@ function(add_ace_lab LAB_NAME)
 endfunction()
 
 add_ace_lab(lab0)
+
