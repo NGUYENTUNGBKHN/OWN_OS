@@ -69,4 +69,5 @@ function(add_ace_lab LAB_NAME)
 endfunction()
 
 add_ace_lab(lab0)
+add_ace_lab(lab1)
 
