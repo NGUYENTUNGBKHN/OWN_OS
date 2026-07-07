@@ -5,11 +5,14 @@
 
 @ External Reference
     .extern ace_os_curr_ptr
+    .extern ace_os_next_ptr
 
     .global ace_os_pendSV_handler
     .global ace_os_intCtxSw
     .global ace_os_ctxSw
     .global ace_os_start_rdy
+    .global ace_os_non_preempt_systick_cw
+
 
 @********************************************************************************************************
 @                                               EQUATES
@@ -19,6 +22,7 @@
 .equ NVIC_SYSPRI14,     0xE000ED22                              @ System priority register (priority 14).
 .equ NVIC_PENDSV_PRI,   0xFF                                    @ PendSV priority value (lowest).
 .equ NVIC_PENDSVSET,    0x10000000                              @ Value to trigger PendSV exception.
+.equ NVIC_SYSTICKSET,   0x40000000                              @ Value to trigger SysTick exception.
 
 
 @********************************************************************************************************
@@ -69,26 +73,36 @@ ace_os_intCtxSw:
     STR     R1, [R0]
     BX      LR
 
-
-
+.thumb_func
+ace_os_non_preempt_systick_cw:
 .thumb_func
 ace_os_pendSV_handler:
-    @ Save status of old task
+    CPSID   I                       @ Prevent interruption during context switch
     MRS     R0, PSP                 @ PSP is process stack pointer
     STMFD   R0!, {R4-R11, R14}      @ Save remaining regs r4-11, R14 on process stack
 
-    MOVW    R1, #:lower16:ace_os_curr_ptr    @ ace_os_curr_ptr = ace_os_curr_ptr;
+    @ Save SP to current task TCB: ace_os_curr_ptr->StkPtr = R0;
+    MOVW    R1, #:lower16:ace_os_curr_ptr
     MOVT    R1, #:upper16:ace_os_curr_ptr
-    LDR     R2, [R1]
+    LDR     R2, [R1]                @ R2 = ace_os_curr_ptr
+    STR     R0, [R2]                @ ace_os_curr_ptr->StkPtr = R0
 
-    ORR     LR,  R4, #0x04                   @ Ensure exception return uses process stack
-    LDR     R0, [R2]                         @ R0 is new process SP; SP = OSTCBHighRdyPtr->StkPtr;
-    LDMFD   R0!, {R4-R11, R14}               @ Restore r4-11, R14 from new process stack
+    @ Update current task pointer: ace_os_curr_ptr = ace_os_next_ptr;
+    MOVW    R3, #:lower16:ace_os_next_ptr
+    MOVT    R3, #:upper16:ace_os_next_ptr
+    LDR     R2, [R3]                @ R2 = ace_os_next_ptr
+    STR     R2, [R1]                @ ace_os_curr_ptr = R2
 
-    MSR     PSP, R0                          @ Load PSP with new process SP
+    @ Load SP of the new task: R0 = ace_os_curr_ptr->StkPtr;
+    LDR     R0, [R2]                @ R0 = new task's stack pointer
+    LDMFD   R0!, {R4-R11, R14}      @ Restore r4-11, R14 from new process stack
 
-    MOV     R2, #0                           @ Restore BASEPRI priority level to 0
-    BX      LR
+    MSR     PSP, R0                 @ Load PSP with new process SP
+    CPSIE   I                       @ Enable interrupts
+    BX      LR                      @ Exception return using LR
+
+
+
 
 
 .end

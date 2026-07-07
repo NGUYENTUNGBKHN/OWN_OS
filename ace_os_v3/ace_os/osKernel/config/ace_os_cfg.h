@@ -15,6 +15,9 @@ extern "C"
 #endif
 
 /* CODE */
+#define ACE_OS_CFG_TIME_QUANTA 10U
+
+#define ACE_OS_CFG_NONE_PREEMP  1
 
 #ifdef __cplusplus
 }

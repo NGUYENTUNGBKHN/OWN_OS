@@ -53,6 +53,9 @@ void ace_os_task_init_tcb(ace_os_tcb *p_tcb)
 
     p_tcb->TaskEntryAddr = 0;
     p_tcb->TaskEntryArg = 0;
+
+    p_tcb->TimeQuanta = 0;
+    p_tcb->TimeQuantaCtr = 0;
 }
 
 void ace_os_task_create(ace_os_tcb          *p_tcb,
@@ -82,6 +85,9 @@ void ace_os_task_create(ace_os_tcb          *p_tcb,
 
     p_tcb->StkBasePtr = p_stk_base;
     p_tcb->Stk_size = stk_size;
+
+    p_tcb->TimeQuanta = ACE_OS_CFG_TIME_QUANTA;
+    p_tcb->TimeQuantaCtr = ACE_OS_CFG_TIME_QUANTA;
 
     /* -------------- ADD TASK TO READY LIST -------------- */
     ace_os_rdylist_insert_tail(p_tcb);

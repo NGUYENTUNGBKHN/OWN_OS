@@ -24,6 +24,8 @@ extern "C"
 void ace_os_start_rdy(void);
 void ace_os_intCtxSw(void);
 void ace_os_ctxSw(void);
+void ace_os_yield(void);
+void ace_os_non_preempt_systick_cw(void);
 
 // void  ace_os_systick_init    (uint32_t  cnts);
 // void  ace_os_systick_init_freq(uint32_t  cpu_freq);

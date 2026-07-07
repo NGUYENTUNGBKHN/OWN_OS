@@ -16,6 +16,7 @@ extern "C"
 
 #include "stdint.h"
 #include "ace_os_cpu.h"
+#include "ace_os_cfg.h"
 /*
 ************************************************************************************************************************
 ************************************************************************************************************************
@@ -89,6 +90,9 @@ struct ace_os_tcb_s
 
     ace_os_task_func    TaskEntryAddr;         /* Pointer to task entry point address */
     void                *TaskEntryArg;          /* Argument passed to task when it was created */
+
+    uint32_t            TimeQuanta;             /* Time slice allocation (in ticks) */
+    uint32_t            TimeQuantaCtr;          /* Time slice remaining (in ticks) */
 };
 
 /*
@@ -101,6 +105,7 @@ struct ace_os_tcb_s
 
 /* TCBs ------------------------------------- */
 extern ace_os_tcb *ace_os_curr_ptr;
+extern ace_os_tcb *ace_os_next_ptr;
 
 
 extern ace_os_rdy_list AceOSRdyList[32];
