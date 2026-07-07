@@ -14,8 +14,8 @@
 /*******************************************************************************
 **                       INTERNAL MACRO DEFINITIONS
 *******************************************************************************/
-
-
+ace_os_tcb *ace_os_curr_ptr;
+ace_os_rdy_list AceOSRdyList[32];
 /*******************************************************************************
 **                      COMMON VARIABLE DEFINITIONS
 *******************************************************************************/
@@ -35,8 +35,12 @@
 **                          FUNCTION DEFINITIONS
 *******************************************************************************/
 
-void ace_os_init(ACE_OS_ERR *p_err)
+void ace_os_init(ace_os_err *p_err)
 {
+    ace_os_curr_ptr = 0;
+
+    ace_os_rdylist_init();
+
     ace_os_task_init(p_err);
     if (*p_err != ACE_OS_ERR_NONE)
     {
@@ -46,9 +50,69 @@ void ace_os_init(ACE_OS_ERR *p_err)
     *p_err = ACE_OS_ERR_NONE;
 }
 
+void ace_os_scheduler()
+{
 
+}
 
+void ace_os_start(ace_os_err *p_err)
+{
+    ace_os_curr_ptr = AceOSRdyList[0].HeadPtr;
 
+    ace_os_start_rdy();
+    *p_err = ACE_OS_ERR_NONE;
+}
+
+void ace_os_rdylist_init()
+{
+    ace_os_rdy_list *p_rdy_list;
+
+    for (uint32_t i = 0; i < 32; i++)
+    {
+        p_rdy_list = &AceOSRdyList[i];
+
+        p_rdy_list->HeadPtr = 0;
+        p_rdy_list->TailPtr = 0;
+    }
+}
+
+void ace_os_rdylist_insert(ace_os_tcb *p_tcb)
+{
+    (void)p_tcb;
+}
+
+void ace_os_rdylist_insert_head(ace_os_tcb *p_tcb)
+{
+    (void)p_tcb;
+}
+
+void ace_os_rdylist_insert_tail(ace_os_tcb *p_tcb)
+{
+    ace_os_rdy_list *p_rdy_list;
+    ace_os_tcb      *p_tcb2;
+
+    p_rdy_list = &AceOSRdyList[0];
+    if (p_rdy_list->HeadPtr == 0)
+    {
+        p_tcb->NextPtr      = 0;
+        p_tcb->PrevPtr      = 0;
+        p_rdy_list->HeadPtr = p_tcb;
+        p_rdy_list->TailPtr = p_tcb;
+    }
+    else
+    {
+        p_tcb->NextPtr      = 0;
+        p_tcb2              = p_rdy_list->TailPtr;
+        p_tcb->PrevPtr      = p_tcb2;
+        p_tcb2->NextPtr     = p_tcb;
+        p_rdy_list->TailPtr = p_tcb;
+    }
+}
+
+void ace_os_rdylist_remove(ace_os_tcb *p_tcb)
+{
+    (void)p_tcb;
+}
 
 
 /******************************** End of file *********************************/

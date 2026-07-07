@@ -44,7 +44,7 @@ function(add_ace_lab LAB_NAME)
         "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/cpu/arm/gnu"
         "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/osKernel/config"
         "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/osKernel/impl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/osKernel/port/arm/cortex-m7/gnu"
+        "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}/osKernel/port/arm-cortex-m/armv7-m/gnu"
     )
     target_compile_options(${LAB_NAME}.elf PRIVATE ${COMMON_COMPILE_OPTIONS})
     target_link_options(${LAB_NAME}.elf PRIVATE
