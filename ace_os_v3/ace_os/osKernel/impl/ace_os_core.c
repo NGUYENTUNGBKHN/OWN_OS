@@ -63,7 +63,7 @@ void ace_os_scheduler()
     if (p_next_tcb != ace_os_curr_ptr)
     {
         ace_os_next_ptr = p_next_tcb;
-        ace_os_ctxSw();
+        ACE_OS_TASK_SW();                   /* Perform a task level context switch */
     }
 }
 
@@ -124,28 +124,46 @@ void ace_os_rdylist_insert_tail(ace_os_tcb *p_tcb)
 
 void ace_os_rdylist_remove(ace_os_tcb *p_tcb)
 {
-    ace_os_rdy_list *p_rdy_list = &AceOSRdyList[0];
+    ace_os_rdy_list *p_rdy_list;
+    ace_os_tcb      *p_tcb1;
+    ace_os_tcb      *p_tcb2;
 
-    if (p_tcb->PrevPtr != (ace_os_tcb *)0)
-    {
-        p_tcb->PrevPtr->NextPtr = p_tcb->NextPtr;
-    }
-    else
-    {
-        p_rdy_list->HeadPtr = p_tcb->NextPtr;
-    }
+    p_rdy_list  = &AceOSRdyList[0];
+    p_tcb1      = p_tcb->PrevPtr;
+    p_tcb2      = p_tcb->NextPtr;
 
-    if (p_tcb->NextPtr != (ace_os_tcb *)0)
+    if (p_tcb1 == ACE_NULL)
     {
-        p_tcb->NextPtr->PrevPtr = p_tcb->PrevPtr;
+        if (p_tcb2 == ACE_NULL)
+        {
+            p_rdy_list->NbrEntries = ACE_NULL;
+            p_rdy_list->HeadPtr = ACE_NULL;
+            p_rdy_list->TailPtr = ACE_NULL;
+        }
+        else
+        {
+            p_rdy_list->NbrEntries --;
+            p_tcb2->PrevPtr = ACE_NULL;
+            p_rdy_list->HeadPtr = p_tcb2;
+        }
     }
-    else
+    else        // p_tcb1 != NULL
     {
-        p_rdy_list->TailPtr = p_tcb->PrevPtr;
+        p_rdy_list->NbrEntries --;
+        p_tcb1->NextPtr = p_tcb2;
+        if (p_tcb2 == ACE_NULL)
+        {
+            p_rdy_list->TailPtr = p_tcb1;
+        }
+        else
+        {   
+            p_tcb2->PrevPtr = p_tcb1;
+        }
     }
 
     p_tcb->NextPtr = (ace_os_tcb *)0;
     p_tcb->PrevPtr = (ace_os_tcb *)0;
+    /*TODO: TRACE */
 }
 void ace_os_yield(void)
 {

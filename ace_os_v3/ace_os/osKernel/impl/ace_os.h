@@ -50,6 +50,7 @@ typedef enum ace_os_err_s
 {
     ACE_OS_ERR_NONE         =       0u,
     ACE_OS_ERR_A            =   10000u,
+    ACE_OS_TCB_INVALID      =   20000u,
 }ace_os_err;
 
 
@@ -68,8 +69,9 @@ typedef enum ace_os_err_s
 */
 struct ace_os_rdy_list_s
 {
-    ace_os_tcb      *HeadPtr;
-    ace_os_tcb      *TailPtr;
+    ace_os_tcb      *HeadPtr;               /* Pointer to task that will run at selected priority */
+    ace_os_tcb      *TailPtr;               /* Pointer to last task          at selected priority */
+    uint16_t        NbrEntries;             /* Number of entries             at selected priority */
 };
 
 
@@ -93,6 +95,9 @@ struct ace_os_tcb_s
 
     uint32_t            TimeQuanta;             /* Time slice allocation (in ticks) */
     uint32_t            TimeQuantaCtr;          /* Time slice remaining (in ticks) */
+
+    uint8_t             TaskState;
+    uint8_t             Prio;
 };
 
 /*

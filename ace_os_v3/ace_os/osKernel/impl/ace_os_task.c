@@ -70,6 +70,16 @@ void ace_os_task_create(ace_os_tcb          *p_tcb,
     // uint32_t *p_stk_limit;
     (void)stk_limit;
 
+
+    if (p_tcb == 0)
+    {
+        /*TODO: Add trace OS */
+        *p_err = ACE_OS_TCB_INVALID;
+        return;
+    }
+
+    
+
     ace_os_task_init_tcb(p_tcb);    /* Initialize the TCB to default values */
 
     *p_err = ACE_OS_ERR_NONE;

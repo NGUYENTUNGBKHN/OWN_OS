@@ -15,6 +15,8 @@ extern "C"
 #endif
 
 /* CODE */
+#define ACE_NULL     0
+
 #define ACE_OS_CFG_TIME_QUANTA 10U
 
 #define ACE_OS_CFG_NONE_PREEMP  0
