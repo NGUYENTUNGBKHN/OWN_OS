@@ -1,5 +1,5 @@
 /**
- * @file       cpu_core.c
+ * @file       cpu_c.c
  * @brief      
  * @date       2026/07/08
  * @author     [Gentantun] (nguyenthanhtung8196@gmail.com)
@@ -43,4 +43,5 @@
 
 
 /******************************** End of file *********************************/
+
 

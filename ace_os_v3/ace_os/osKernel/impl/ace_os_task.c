@@ -61,6 +61,7 @@ void ace_os_task_init_tcb(ace_os_tcb *p_tcb)
 void ace_os_task_create(ace_os_tcb          *p_tcb,
                         ace_os_task_func    p_task_func,
                         void                *p_arg,
+                        uint32_t            prio,
                         uint32_t            *p_stk_base,
                         uint32_t            stk_size,
                         uint32_t            stk_limit,
@@ -90,6 +91,7 @@ void ace_os_task_create(ace_os_tcb          *p_tcb,
     p_tcb->TaskEntryAddr = p_task_func;
     p_tcb->TaskEntryArg = p_arg;
 
+    p_tcb->Prio = prio;
     // p_sp = p_stk_base;
     p_tcb->StkPtr = p_sp;
 
@@ -100,15 +102,56 @@ void ace_os_task_create(ace_os_tcb          *p_tcb,
     p_tcb->TimeQuantaCtr = ACE_OS_CFG_TIME_QUANTA;
 
     /* -------------- ADD TASK TO READY LIST -------------- */
+    ace_os_prio_insert(p_tcb->Prio);
     ace_os_rdylist_insert_tail(p_tcb);
 
     ace_os_scheduler();
 }
 
 void ace_os_task_del(ace_os_tcb *p_tcb,
+                        ace_os_err *p_err)
+{
+    
+
+    if (p_tcb == ACE_NULL)
+    {
+        p_tcb = ace_os_tcb_curr_ptr;
+    }
+
+
+    switch (p_tcb->TaskState)
+    {
+    case ACE_OS_TASK_STATE_RDY:
+        ace_os_rdylist_remove(p_tcb);
+        break;
+    case ACE_OS_TASK_STATE_SUSPENDED:
+        break;
+    case ACE_OS_TASK_STATE_DLY:
+    case ACE_OS_TASK_STATE_DLY_SUSPENDED:
+        ace_os_rdylist_remove(p_tcb);
+        break;
+    case ACE_OS_TASK_STATE_PEND:
+    case ACE_OS_TASK_STATE_PEND_SUSPENDED:
+    case ACE_OS_TASK_STATE_PEND_TIMEOUT:
+    case ACE_OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+        break;
+    default:
+        *p_err = ACE_OS_TCB_INVALID;
+        break;
+    }
+
+    ace_os_task_init_tcb(p_tcb);
+    *p_err = ACE_OS_ERR_NONE;
+    ace_os_scheduler();
+}
+
+void ace_os_task_suspend(ace_os_tcb *p_tcb,
                     ace_os_err *p_err)
 {
-    (void)p_tcb;
+    if (p_tcb == ACE_NULL)
+    {
+        p_tcb = ace_os_tcb_curr_ptr;
+    }
 
     *p_err = ACE_OS_ERR_NONE;
 }

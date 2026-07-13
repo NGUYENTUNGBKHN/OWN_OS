@@ -24,7 +24,7 @@
     "doxdocgen.generic.authorEmail": "nguyenthanhtung8196@gmail.com",
 
 
-    "cortex-debug.variableUseNaturalFormat": false,
+    "cortex-debug.variableUseNaturalFormat": true,
     "makefile.makefilePath": "E:\\Project\\Embedded\\STM32\\stm32f746-disco\\normal\\ACE\\Bootloader\\Makefile",
     "files.associations": {
         "*.h": "c",

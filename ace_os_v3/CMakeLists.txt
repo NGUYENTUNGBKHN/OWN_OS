@@ -45,7 +45,7 @@ function(add_ace_lab LAB_NAME)
         common
         "${CMAKE_CURRENT_SOURCE_DIR}/${LAB_NAME}"
         "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/cpu"
-        "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/cpu/arm/gnu"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/cpu/arm-cortex-m/gnu"
         "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/osKernel/config"
         "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/osKernel/impl"
         "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/osKernel/port/arm-cortex-m/armv7-m/gnu"
@@ -70,4 +70,5 @@ endfunction()
 
 add_ace_lab(lab0)
 add_ace_lab(lab1)
+add_ace_lab(lab2)
 

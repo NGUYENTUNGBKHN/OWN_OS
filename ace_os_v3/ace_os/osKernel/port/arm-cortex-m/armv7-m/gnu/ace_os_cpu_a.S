@@ -4,8 +4,10 @@
 @********************************************************************************************************
 
 @ External Reference
-    .extern ace_os_curr_ptr
-    .extern ace_os_next_ptr
+    .extern ace_os_prio_curr
+    .extern ace_os_prio_high_rdy
+    .extern ace_os_tcb_curr_ptr
+    .extern ace_os_high_rdy_ptr
 
     .global ace_os_pendSV_handler
     .global ace_os_intCtxSw
@@ -36,16 +38,29 @@
 .thumb_func
 ace_os_start_rdy:
     CPSID   I
-    MOVW    R0, #:lower16:NVIC_SYSPRI14    @ Set the PendSV exception priority
+    MOVW    R0, #:lower16:NVIC_SYSPRI14     @ Set the PendSV exception priority
     MOVT    R0, #:upper16:NVIC_SYSPRI14
 
     MOVW    R1, #:lower16:NVIC_PENDSV_PRI
     MOVT    R1, #:upper16:NVIC_PENDSV_PRI
     STRB    R1, [R0]
 
-    MOVW    R0, #:lower16:ace_os_curr_ptr
-    MOVT    R0, #:upper16:ace_os_curr_ptr
-    LDR     R2, [R0]
+    MOVS    R0, #0                          @ Set the PSP to 0 for initial context switch call
+    MSR     PSP, R0
+
+    MOVW    R0, #:lower16:ace_os_prio_curr   @ ace_os_prio_curr = ace_os_prio_high_rdy
+    MOVT    R0, #:upper16:ace_os_prio_curr
+    MOVW    R1, #:lower16:ace_os_prio_high_rdy   
+    MOVT    R1, #:upper16:ace_os_prio_high_rdy
+    LDR     R2, [R1]
+    STR     R2, [R0]
+
+    MOVW    R0, #:lower16:ace_os_tcb_curr_ptr   @ ace_os_tcb_curr_ptr = ace_os_high_rdy_ptr
+    MOVT    R0, #:upper16:ace_os_tcb_curr_ptr
+    MOVW    R1, #:lower16:ace_os_high_rdy_ptr   
+    MOVT    R1, #:upper16:ace_os_high_rdy_ptr
+    LDR     R2, [R1]
+    STR     R2, [R0]
 
     LDR     R0, [R2]
     MSR     PSP, R0
@@ -81,19 +96,19 @@ ace_os_pendSV_handler:
     MRS     R0, PSP                 @ PSP is process stack pointer
     STMFD   R0!, {R4-R11, R14}      @ Save remaining regs r4-11, R14 on process stack
 
-    @ Save SP to current task TCB: ace_os_curr_ptr->StkPtr = R0;
-    MOVW    R1, #:lower16:ace_os_curr_ptr
-    MOVT    R1, #:upper16:ace_os_curr_ptr
-    LDR     R2, [R1]                @ R2 = ace_os_curr_ptr
-    STR     R0, [R2]                @ ace_os_curr_ptr->StkPtr = R0
+    @ Save SP to current task TCB: ace_os_tcb_curr_ptr->StkPtr = R0;
+    MOVW    R1, #:lower16:ace_os_tcb_curr_ptr
+    MOVT    R1, #:upper16:ace_os_tcb_curr_ptr
+    LDR     R2, [R1]                @ R2 = ace_os_tcb_curr_ptr
+    STR     R0, [R2]                @ ace_os_tcb_curr_ptr->StkPtr = R0
 
-    @ Update current task pointer: ace_os_curr_ptr = ace_os_next_ptr;
-    MOVW    R3, #:lower16:ace_os_next_ptr
-    MOVT    R3, #:upper16:ace_os_next_ptr
-    LDR     R2, [R3]                @ R2 = ace_os_next_ptr
-    STR     R2, [R1]                @ ace_os_curr_ptr = R2
+    @ Update current task pointer: ace_os_tcb_curr_ptr = ace_os_high_rdy_ptr;
+    MOVW    R3, #:lower16:ace_os_high_rdy_ptr
+    MOVT    R3, #:upper16:ace_os_high_rdy_ptr
+    LDR     R2, [R3]                @ R2 = ace_os_high_rdy_ptr
+    STR     R2, [R1]                @ ace_os_tcb_curr_ptr = R2
 
-    @ Load SP of the new task: R0 = ace_os_curr_ptr->StkPtr;
+    @ Load SP of the new task: R0 = ace_os_tcb_curr_ptr->StkPtr;
     LDR     R0, [R2]                @ R0 = new task's stack pointer
     LDMFD   R0!, {R4-R11, R14}      @ Restore r4-11, R14 from new process stack
 

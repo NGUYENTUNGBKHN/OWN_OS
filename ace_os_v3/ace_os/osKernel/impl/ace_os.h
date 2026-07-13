@@ -15,8 +15,36 @@ extern "C"
 #endif
 
 #include "stdint.h"
+#include "cpu.h"
+#include "cpu_core.h"
+#include "ace_os_type.h"
 #include "ace_os_cpu.h"
 #include "ace_os_cfg.h"
+
+/*
+************************************************************************************************************************
+************************************************************************************************************************
+*                                                   # D E F I N E S
+************************************************************************************************************************
+************************************************************************************************************************
+*/
+
+/*
+========================================================================================================================
+*                                                      TASK STATUS
+========================================================================================================================
+*/
+
+#define  ACE_OS_TASK_STATE_RDY                    (ACE_OS_STATE)(  0u)  /*   0 0 0     Ready                                  */
+#define  ACE_OS_TASK_STATE_DLY                    (ACE_OS_STATE)(  1u)  /*   0 0 1     Delayed or Timeout                     */
+#define  ACE_OS_TASK_STATE_PEND                   (ACE_OS_STATE)(  2u)  /*   0 1 0     Pend                                   */
+#define  ACE_OS_TASK_STATE_PEND_TIMEOUT           (ACE_OS_STATE)(  3u)  /*   0 1 1     Pend + Timeout                         */
+#define  ACE_OS_TASK_STATE_SUSPENDED              (ACE_OS_STATE)(  4u)  /*   1 0 0     Suspended                              */
+#define  ACE_OS_TASK_STATE_DLY_SUSPENDED          (ACE_OS_STATE)(  5u)  /*   1 0 1     Suspended + Delayed or Timeout         */
+#define  ACE_OS_TASK_STATE_PEND_SUSPENDED         (ACE_OS_STATE)(  6u)  /*   1 1 0     Suspended + Pend                       */
+#define  ACE_OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED (ACE_OS_STATE)(  7u)  /*   1 1 1     Suspended + Pend + Timeout             */
+#define  ACE_OS_TASK_STATE_DEL                    (ACE_OS_STATE)(255u)
+
 /*
 ************************************************************************************************************************
 ************************************************************************************************************************
@@ -109,8 +137,8 @@ struct ace_os_tcb_s
 */
 
 /* TCBs ------------------------------------- */
-extern ace_os_tcb *ace_os_curr_ptr;
-extern ace_os_tcb *ace_os_next_ptr;
+extern ace_os_tcb *ace_os_tcb_curr_ptr;
+extern ace_os_tcb *ace_os_high_rdy_ptr;
 
 
 extern ace_os_rdy_list AceOSRdyList[32];
@@ -142,6 +170,7 @@ void ace_os_scheduler();
 void ace_os_task_create(ace_os_tcb          *p_tcb,
                         ace_os_task_func    p_task_func,
                         void                *p_arg,
+                        uint32_t            prio,
                         uint32_t            *p_stk_base,
                         uint32_t            stk_size,
                         uint32_t            stk_limit,
@@ -170,10 +199,20 @@ uint32_t *ace_os_task_stack_init(ace_os_task_func p_task_func,
 /*
 ************************************************************************************************************************
 ************************************************************************************************************************
-*                   u C / O S - I I I   I N T E R N A L   F U N C T I O N   P R O T O T Y P E S
+*                   A C E - O S   I N T E R N A L   F U N C T I O N   P R O T O T Y P E S
 ************************************************************************************************************************
 ************************************************************************************************************************
 */
+
+/* ----------------------------------------------- PRIORITY MANAGEMENT ---------------------------------------------- */
+
+void ace_os_prio_init(void);
+
+uint8_t ace_os_prio_get_highest(void);
+
+void ace_os_prio_insert(CPU_DATA prio);
+
+void ace_os_prio_remove(CPU_DATA prio);
 
 /* --------------------------------------------- READY LIST MANAGEMENT ---------------------------------------------- */
 
@@ -186,6 +225,8 @@ void ace_os_rdylist_insert_head(ace_os_tcb *p_tcb);
 void ace_os_rdylist_insert_tail(ace_os_tcb *p_tcb);
 
 void ace_os_rdylist_remove(ace_os_tcb *p_tcb);
+
+
 
 #ifdef __cplusplus
 }
