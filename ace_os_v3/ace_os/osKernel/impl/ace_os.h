@@ -210,9 +210,9 @@ void ace_os_prio_init(void);
 
 uint8_t ace_os_prio_get_highest(void);
 
-void ace_os_prio_insert(CPU_DATA prio);
+void ace_os_prio_insert(ACE_OS_PRIO prio);
 
-void ace_os_prio_remove(CPU_DATA prio);
+void ace_os_prio_remove(ACE_OS_PRIO prio);
 
 /* --------------------------------------------- READY LIST MANAGEMENT ---------------------------------------------- */
 
