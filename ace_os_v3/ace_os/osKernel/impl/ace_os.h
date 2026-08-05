@@ -118,14 +118,14 @@ struct ace_os_tcb_s
     uint32_t            *StkBasePtr;            /* Pointer to base address of stack */
     uint32_t            Stk_size;               /* Size of stack */
 
-    ace_os_task_func    TaskEntryAddr;         /* Pointer to task entry point address */
+    ace_os_task_func    TaskEntryAddr;          /* Pointer to task entry point address */
     void                *TaskEntryArg;          /* Argument passed to task when it was created */
 
     uint32_t            TimeQuanta;             /* Time slice allocation (in ticks) */
     uint32_t            TimeQuantaCtr;          /* Time slice remaining (in ticks) */
 
-    uint8_t             TaskState;
-    uint8_t             Prio;
+    uint8_t             TaskState;              /* State of task */
+    uint8_t             Prio;                   /* Task priority */
 };
 
 /*
@@ -142,6 +142,8 @@ extern ace_os_tcb *ace_os_high_rdy_ptr;
 
 
 extern ace_os_rdy_list AceOSRdyList[32];
+
+extern ACE_OS_STATE AceOSRuning;
 
 /*
 ************************************************************************************************************************

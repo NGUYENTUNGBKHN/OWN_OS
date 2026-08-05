@@ -17,8 +17,12 @@ void task1(void *name_tsk)
     {
         printf("%s \n", (char*)name_tsk);
         task1_ctr++;
+        if (task1_ctr == 1000)
+        {
+            break;
+        }
     }
-    
+    printf("Task 1 complete\n");
 }
 
 volatile uint32_t task2_ctr = 0;
@@ -28,8 +32,12 @@ void task2(void *name_tsk)
     {
         printf("%s \n", (char*)name_tsk);
         task2_ctr++;
+        if (task2_ctr == 1000)
+        {
+            break;
+        }
     }
-    
+    printf("Task 2 complete\n");
 }
 
 int main(void)
@@ -41,8 +49,22 @@ int main(void)
 
     ace_os_init(&err);
 
-    ace_os_task_create(&Task1_TCB, task1, task1_name, &Task1_StartStk[0], 256, 0, &err);
-    ace_os_task_create(&Task2_TCB, task2, task2_name, &Task2_StartStk[0], 256, 0, &err);
+    ace_os_task_create(&Task1_TCB, 
+                        task1, 
+                        task1_name, 
+                        0,
+                        &Task1_StartStk[0], 
+                        256, 
+                        0, 
+                        &err);
+    ace_os_task_create(&Task2_TCB, 
+                        task2, 
+                        task2_name, 
+                        0,
+                        &Task2_StartStk[0], 
+                        APP_CFG_TASK_START_STK_SIZE, 
+                        0, 
+                        &err);
 
     SysTick_Enable(100);
 

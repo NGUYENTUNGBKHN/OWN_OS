@@ -1,5 +1,5 @@
 {
-        "doxdocgen.c.getterText": "Create a {name} object",
+    "doxdocgen.c.getterText": "Create a {name} object",
     "doxdocgen.file.customTag": [
         "@details    ",
         "@ref        ",
@@ -17,12 +17,28 @@
     // Set the name of the author.  Replaces {author}.
     "doxdocgen.generic.authorName": "    [Gentantun]",
     "doxdocgen.c.commentPrefix": " * ",
-    "doxdocgen.c.firstLine": "/**",
-    "doxdocgen.c.lastLine": "*/",
+    // "doxdocgen.c.firstLine": "/**",
+    // "doxdocgen.c.lastLine": "*/",
+    "doxdocgen.c.firstLine": "/*\n****************************************************************************************************************",
+    "doxdocgen.c.lastLine": "****************************************************************************************************************\n*/",
     "doxdocgen.generic.briefTemplate": "@brief      {text}",
     "doxdocgen.generic.dateFormat": "      YYYY/MM/DD",
     "doxdocgen.generic.authorEmail": "nguyenthanhtung8196@gmail.com",
 
+    "doxdocgen.generic.paramTemplate": "@param      {param}    ",
+    // Template for @return when function not void
+    "doxdocgen.generic.returnTemplate": "@return     {type}",
+    //  @return 
+    "doxdocgen.generic.includeTypeAtReturn": true,
+
+    "doxdocgen.generic.order": [
+        "brief",
+        "template",
+        "param",
+        "return"
+    ],
+    "doxdocgen.c.setterText": "Set {name}",
+    
 
     "cortex-debug.variableUseNaturalFormat": true,
     "makefile.makefilePath": "E:\\Project\\Embedded\\STM32\\stm32f746-disco\\normal\\ACE\\Bootloader\\Makefile",
@@ -30,6 +46,5 @@
         "*.h": "c",
         "cstdint": "c"
     },
-    "cmake.ignoreCMakeListsMissing": true,
     "C_Cpp.default.compilerPath": "c:\\gcc-arm-none-eabi\\bin\\arm-none-eabi-gcc.exe",
 }

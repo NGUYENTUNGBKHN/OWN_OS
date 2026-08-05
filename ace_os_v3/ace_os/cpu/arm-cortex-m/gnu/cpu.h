@@ -1,11 +1,13 @@
-/**
+/*
+****************************************************************************************************************
  * @file       cpu.h
  * @brief      
- * @date       2026/07/08
+ * @date       2026/08/05
  * @author     [Gentantun] (nguyenthanhtung8196@gmail.com)
  * @details    
  * @ref        
  * @copyright  Copyright (c) 2026 RoboTun
+****************************************************************************************************************
 */
 #ifndef _CPU_H_
 #define _CPU_H_
@@ -16,8 +18,6 @@ extern "C"
 
 /* CODE */
 #include "stdint.h"
-
-
 
 
 typedef            void        CPU_VOID;

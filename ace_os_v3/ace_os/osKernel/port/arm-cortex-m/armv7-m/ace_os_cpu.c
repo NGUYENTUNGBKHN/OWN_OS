@@ -46,7 +46,7 @@ uint32_t *ace_os_task_stack_init(ace_os_task_func p_task_func,
     uint32_t *p_stk;
 
     p_stk = &p_stk_base[stk_size];
-
+    /* Align the stack to 8-byte */
     p_stk = (uint32_t*)((uint32_t)(p_stk) & 0xFFFFFFF8u);
     /* Registers stacked as if auto-saved on exception      */
     *(--p_stk) = (uint32_t)0x01000000u;            /* xPSR                                                 */
