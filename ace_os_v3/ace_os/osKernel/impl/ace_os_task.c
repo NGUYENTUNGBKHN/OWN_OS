@@ -122,12 +122,12 @@ void ace_os_task_create(ace_os_tcb          *p_tcb,
                         ace_os_task_func    p_task_func,
                         void                *p_arg,
                         uint32_t            prio,
-                        uint32_t            *p_stk_base,
-                        uint32_t            stk_size,
-                        uint32_t            stk_limit,
-                        ace_os_err          *p_err)
+                        CPU_STK            *p_stk_base,
+                        CPU_STK_SIZE        stk_size,
+                        CPU_STK_SIZE        stk_limit,
+                        ace_os_err         *p_err)
 {
-    uint32_t *p_sp;
+    CPU_STK *p_sp;
     // uint32_t *p_stk_limit;
     (void)stk_limit;
 
@@ -164,9 +164,24 @@ void ace_os_task_create(ace_os_tcb          *p_tcb,
     ace_os_prio_insert(p_tcb->Prio);
     ace_os_rdylist_insert_tail(p_tcb);
 
+    /* Return if multitasking has not started               */
+    if (AceOSRunning != ACE_OS_STATE_OS_RUNNING)
+    {
+        return;
+    }
+
     ace_os_scheduler();
 }
 
+/*
+****************************************************************************************************************
+                                        DELETE TASK
+
+ * @brief      
+ * @param      p_tcb    
+ * @param      p_err    
+****************************************************************************************************************
+*/
 void ace_os_task_del(ace_os_tcb *p_tcb,
                         ace_os_err *p_err)
 {
@@ -196,12 +211,22 @@ void ace_os_task_del(ace_os_tcb *p_tcb,
         *p_err = ACE_OS_TCB_INVALID;
         break;
     }
-
+    p_tcb->TaskState = ACE_OS_TASK_STATE_DEL;
+    /* Reset value to default */
     ace_os_task_init_tcb(p_tcb);
     *p_err = ACE_OS_ERR_NONE;
     ace_os_scheduler();
 }
 
+/*
+****************************************************************************************************************
+                                    SUSPEND TASK
+                                    
+ * @brief      
+ * @param      p_tcb    
+ * @param      p_err    
+****************************************************************************************************************
+*/
 void ace_os_task_suspend(ace_os_tcb *p_tcb,
                     ace_os_err *p_err)
 {
@@ -210,9 +235,53 @@ void ace_os_task_suspend(ace_os_tcb *p_tcb,
         p_tcb = ace_os_tcb_curr_ptr;
     }
 
+    if (p_tcb == &IdleTask_TCB)
+    {
+        *p_err = OS_ERR_TASK_SUSPEND_IDLE;
+        return;
+    }
+
     *p_err = ACE_OS_ERR_NONE;
+
+    switch (p_tcb->TaskState)
+    {
+    case ACE_OS_STATE_NOT_RDY:
+        p_tcb->TaskState = ACE_OS_TASK_STATE_SUSPENDED;
+        ace_os_rdylist_remove(p_tcb);
+        /* code */
+        break;
+    case ACE_OS_TASK_STATE_DLY:
+        p_tcb->TaskState = ACE_OS_TASK_STATE_DLY_SUSPENDED;
+        break;
+    case ACE_OS_TASK_STATE_PEND:
+        p_tcb->TaskState = ACE_OS_TASK_STATE_PEND_SUSPENDED;
+        break;
+    case ACE_OS_TASK_STATE_PEND_TIMEOUT:
+        p_tcb->TaskState = ACE_OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED;
+        break;
+    case ACE_OS_TASK_STATE_SUSPENDED:
+    case ACE_OS_TASK_STATE_DLY_SUSPENDED:
+    case ACE_OS_TASK_STATE_PEND_SUSPENDED:
+    case ACE_OS_TASK_STATE_PEND_TIMEOUT_SUSPENDED:
+        break;
+    default:
+        *p_err = ACE_OS_TCB_INVALID;
+        break;
+    }
+    /* Only schedule when the kernel is running             */
+    if (AceOSRunning == ACE_OS_STATE_OS_RUNNING)
+    {
+        ace_os_scheduler();
+    }
 }
 
+/*
+****************************************************************************************************************
+                                        TASK RETURN
+
+ * @brief      
+****************************************************************************************************************
+*/
 void ace_os_task_return()
 {
     ace_os_err err;

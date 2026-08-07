@@ -36,13 +36,15 @@
 /***************************************************************************************************************
 **                                        INTERNAL VARIABLE DEFINITIONS
 ***************************************************************************************************************/
-ace_os_tcb *ace_os_tcb_curr_ptr;
-ace_os_tcb *ace_os_high_rdy_ptr;
-ace_os_rdy_list AceOSRdyList[32];
+// ace_os_tcb *ace_os_tcb_curr_ptr;
+// ace_os_tcb *ace_os_high_rdy_ptr;
+// ace_os_rdy_list AceOSRdyList[32];
 
-uint8_t ace_os_prio_curr;
-uint8_t ace_os_prio_high_rdy;
+// uint8_t ace_os_prio_curr;
+// uint8_t ace_os_prio_high_rdy;
 
+// ace_os_tcb IdleTask_TCB;
+// ACE_OS_STATE AceOSRunning;
 /***************************************************************************************************************
 **                                         INTERNAL FUNCTION PROTOTYPES
 ***************************************************************************************************************/
@@ -54,6 +56,46 @@ uint8_t ace_os_prio_high_rdy;
 
 /*
 ****************************************************************************************************************
+ *                                          IDLE TASK
+ * 
+ * @brief      This task is internal to ACE OS and executes whenever no other higher priority tasks execute becasuse
+ *             They are ALL waiting for event(s) to occur.
+ * 
+ * @param      p    
+ * 
+****************************************************************************************************************
+*/
+void ace_os_idle_task(void *p)
+{
+    (void)p;
+    for(;;)
+    {
+
+    }
+}
+
+/*
+****************************************************************************************************************
+ *                                      CREATE IDLE TASK
+ * 
+ * @brief      This function create IDLE TASK and this task always running
+ *  
+****************************************************************************************************************
+*/
+static void ace_os_idle_task_init(ace_os_err *err)
+{
+    ace_os_task_create(&IdleTask_TCB, 
+                        ace_os_idle_task,
+                        (CPU_CHAR   *)"ACE OS Idle Task", 
+                        31,
+                        AceOSCfg_IdleTaskBasePtr, 
+                        AceOSCfg_IdleTaskSize, 
+                        0, 
+                        err);
+}
+
+/*
+****************************************************************************************************************
  *                                  ACE OS INITIALIZATION
  * @brief      
  * @param      p_err    
@@ -61,6 +103,9 @@ uint8_t ace_os_prio_high_rdy;
 */
 void ace_os_init(ace_os_err *p_err)
 {
+    /* Indicate that multitasking has not started           */
+    AceOSRunning            = ACE_OS_STATE_OS_STOPPED;                
+
     ace_os_tcb_curr_ptr     = ACE_NULL;
     ace_os_high_rdy_ptr     = ACE_NULL;
 
@@ -71,7 +116,12 @@ void ace_os_init(ace_os_err *p_err)
 
     ace_os_rdylist_init();
 
+    /* Initialize the Idle Task */
     ace_os_task_init(p_err);
+
+    /* Initialize the Idle Task */
+    ace_os_idle_task_init(p_err);
+
     if (*p_err != ACE_OS_ERR_NONE)
     {
         return;
@@ -112,13 +162,20 @@ void ace_os_scheduler()
 */
 void ace_os_start(ace_os_err *p_err)
 {
-    ace_os_prio_high_rdy    = ace_os_prio_get_highest();
-    ace_os_prio_curr        = ace_os_prio_high_rdy;
-    ace_os_high_rdy_ptr     = AceOSRdyList[ace_os_prio_high_rdy].HeadPtr;
-    ace_os_tcb_curr_ptr         = ace_os_high_rdy_ptr;
-
-    ace_os_start_rdy();
-    *p_err = ACE_OS_ERR_NONE;
+    if (AceOSRunning == ACE_OS_STATE_OS_STOPPED)
+    {
+        ace_os_prio_high_rdy    = ace_os_prio_get_highest();
+        ace_os_prio_curr        = ace_os_prio_high_rdy;
+        ace_os_high_rdy_ptr     = AceOSRdyList[ace_os_prio_high_rdy].HeadPtr;
+        ace_os_tcb_curr_ptr         = ace_os_high_rdy_ptr;
+        AceOSRunning = ACE_OS_STATE_OS_RUNNING;
+        ace_os_start_rdy();
+        *p_err = ACE_OS_ERR_NONE;
+    }
+    else
+    {
+        *p_err = ACE_OS_ERR_RUNNING;
+    }
 }
 
 void ace_os_rdylist_init()
@@ -246,9 +303,10 @@ void ace_os_rdylist_remove(ace_os_tcb *p_tcb)
     {
         if (p_tcb2 == ACE_NULL)
         {
-            p_rdy_list->NbrEntries  = ACE_NULL;
+            p_rdy_list->NbrEntries  = 0;
             p_rdy_list->HeadPtr     = ACE_NULL;
             p_rdy_list->TailPtr     = ACE_NULL;
+            ace_os_prio_remove(p_tcb->Prio);
         }
         else
         {
@@ -275,6 +333,7 @@ void ace_os_rdylist_remove(ace_os_tcb *p_tcb)
     p_tcb->PrevPtr = (ace_os_tcb *)0;
     /*TODO: TRACE */
 }
+
 void ace_os_yield(void)
 {
     if (ace_os_tcb_curr_ptr != (ace_os_tcb *)0)
@@ -288,6 +347,37 @@ void ace_os_yield(void)
         /* Schedule immediately */
         ace_os_scheduler();
     }
+}
+
+void ace_os_sched_round_robin(ace_os_rdy_list *p_rdy_list)
+{
+    ace_os_tcb *p_tcb;
+
+
+    p_tcb = p_rdy_list->HeadPtr;
+
+    if (p_tcb == ACE_NULL)
+    {
+        return;
+    }
+
+    if (p_tcb == &IdleTask_TCB)
+    {
+        return;
+    }
+
+    if (p_tcb->TimeQuantaCtr > 0)
+    {
+        p_tcb->TimeQuantaCtr--;
+    }
+
+    if (p_tcb->TimeQuantaCtr > 0)
+    {
+        return;
+    }
+
+    ace_os_rdylist_move_head_to_tail(p_rdy_list);
+    /* */
 }
 
 

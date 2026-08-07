@@ -21,6 +21,12 @@ extern "C"
 #include "ace_os_cpu.h"
 #include "ace_os_cfg.h"
 
+#ifdef   ACE_OS_GLOBALS
+#define  ACE_OS_EXT
+#else
+#define  ACE_OS_EXT  extern
+#endif
+#define ACE_OS_PRIO_TBL_SIZE 1
 /*
 ************************************************************************************************************************
 ************************************************************************************************************************
@@ -34,6 +40,21 @@ extern "C"
 *                                                      TASK STATUS
 ========================================================================================================================
 */
+
+#define  ACE_OS_STATE_OS_STOPPED                 (ACE_OS_STATE)(0u)
+#define  ACE_OS_STATE_OS_RUNNING                 (ACE_OS_STATE)(1u)
+
+#define  ACE_OS_STATE_NOT_RDY                    (CPU_BOOLEAN)(0u)
+#define  ACE_OS_STATE_RDY                        (CPU_BOOLEAN)(1u)
+
+                                                                        /* ------------------- TASK STATES ------------------ */
+#define  ACE_OS_TASK_STATE_BIT_DLY               (ACE_OS_STATE)(0x01u)  /*   /-------- SUSPENDED bit                          */
+                                                                        /*   |                                                */
+#define  ACE_OS_TASK_STATE_BIT_PEND              (ACE_OS_STATE)(0x02u)  /*   | /-----  PEND      bit                          */
+                                                                        /*   | |                                              */
+#define  ACE_OS_TASK_STATE_BIT_SUSPENDED         (ACE_OS_STATE)(0x04u)  /*   | | /---  Delayed/Timeout bit                    */
+                                                                        /*   | | |                                            */
+                                                                        /*   V V V                                            */
 
 #define  ACE_OS_TASK_STATE_RDY                    (ACE_OS_STATE)(  0u)  /*   0 0 0     Ready                                  */
 #define  ACE_OS_TASK_STATE_DLY                    (ACE_OS_STATE)(  1u)  /*   0 0 1     Delayed or Timeout                     */
@@ -76,9 +97,14 @@ typedef void (*ace_os_task_func)(void*);
 */
 typedef enum ace_os_err_s 
 {
-    ACE_OS_ERR_NONE         =       0u,
-    ACE_OS_ERR_A            =   10000u,
-    ACE_OS_TCB_INVALID      =   20000u,
+    ACE_OS_ERR_NONE                 =       0u,
+    ACE_OS_ERR_A                    =   10000u,
+    ACE_OS_TCB_INVALID              =   20000u,
+
+    ACE_OS_ERR_RUNNING              =   24202u,
+
+    /* Task */
+    OS_ERR_TASK_SUSPEND_IDLE        =   29019u,
 }ace_os_err;
 
 
@@ -110,13 +136,13 @@ struct ace_os_rdy_list_s
 */
 struct ace_os_tcb_s
 {
-    uint32_t            *StkPtr;                /* Pointer to current top of stack */
+    CPU_STK            *StkPtr;                 /* Pointer to current top of stack */
 
     ace_os_tcb          *NextPtr;               /* Pointer to next TCB in the TCB list */
     ace_os_tcb          *PrevPtr;               /* Pointer to previous TCB in the TCB list*/
 
-    uint32_t            *StkBasePtr;            /* Pointer to base address of stack */
-    uint32_t            Stk_size;               /* Size of stack */
+    CPU_STK            *StkBasePtr;             /* Pointer to base address of stack */
+    CPU_STK_SIZE        Stk_size;               /* Size of stack */
 
     ace_os_task_func    TaskEntryAddr;          /* Pointer to task entry point address */
     void                *TaskEntryArg;          /* Argument passed to task when it was created */
@@ -135,15 +161,35 @@ struct ace_os_tcb_s
 ************************************************************************************************************************
 ************************************************************************************************************************
 */
-
-/* TCBs ------------------------------------- */
-extern ace_os_tcb *ace_os_tcb_curr_ptr;
-extern ace_os_tcb *ace_os_high_rdy_ptr;
+                                                            /* IDLE TASK -------------------------------- */
+ACE_OS_EXT  ace_os_tcb IdleTask_TCB;                        /*  */
 
 
-extern ace_os_rdy_list AceOSRdyList[32];
+                                                            /* TCBs ------------------------------------- */
+ACE_OS_EXT ace_os_tcb *ace_os_tcb_curr_ptr;
+ACE_OS_EXT ace_os_tcb *ace_os_high_rdy_ptr;
 
-extern ACE_OS_STATE AceOSRuning;
+                                                            /* READY LIST ------------------------------- */
+ACE_OS_EXT ace_os_rdy_list AceOSRdyList[32];                /* Table of tasks ready to run                */
+
+                                                            /* PRIORITIES ------------------------------- */
+ACE_OS_EXT ACE_OS_PRIO  ace_os_prio_curr;                   /* Priority of current task                   */
+ACE_OS_EXT ACE_OS_PRIO  ace_os_prio_high_rdy;               /* Priority of highest priority task          */
+ACE_OS_EXT CPU_DATA AceOSPrioTbl[ACE_OS_PRIO_TBL_SIZE];
+
+                                                            /* MISCELLANEOUS ---------------------------- */
+ACE_OS_EXT ACE_OS_STATE AceOSRunning;                       /* Flag indicating the kernel is running      */
+ACE_OS_EXT ACE_OS_STATE AceOSInitialized;                   /* Flag indicating the kernel is initialized  */
+
+/*
+************************************************************************************************************************
+************************************************************************************************************************
+*                                                   E X T E R N A L S
+************************************************************************************************************************
+************************************************************************************************************************
+*/
+extern CPU_STK         *const AceOSCfg_IdleTaskBasePtr ;
+extern CPU_STK_SIZE     const AceOSCfg_IdleTaskSize  ;
 
 /*
 ************************************************************************************************************************
@@ -173,15 +219,26 @@ void ace_os_task_create(ace_os_tcb          *p_tcb,
                         ace_os_task_func    p_task_func,
                         void                *p_arg,
                         uint32_t            prio,
-                        uint32_t            *p_stk_base,
-                        uint32_t            stk_size,
-                        uint32_t            stk_limit,
-                        ace_os_err          *p_err);
+                        CPU_STK            *p_stk_base,
+                        CPU_STK_SIZE        stk_size,
+                        CPU_STK_SIZE        stk_limit,
+                        ace_os_err         *p_err);
+
+void ace_os_task_suspend(ace_os_tcb *p_tcb,
+                        ace_os_err *p_err);
 
 /* ------------------------------------------------ INTERNAL FUNCTIONS ---------------------------------------------- */
 void ace_os_task_init(ace_os_err *p_err);
 
 void ace_os_task_return(void);
+
+
+/* ================================================================================================================== */
+/*                                                 TIME MANAGEMENT                                                    */
+/* ================================================================================================================== */
+
+void ace_os_time_tick();
+
 
 /*
 ************************************************************************************************************************
@@ -191,11 +248,11 @@ void ace_os_task_return(void);
 ************************************************************************************************************************
 */
 
-uint32_t *ace_os_task_stack_init(ace_os_task_func p_task_func,
+CPU_STK *ace_os_task_stack_init(ace_os_task_func p_task_func,
                                 void             *p_arg,
-                                uint32_t         *p_stk_base,
-                                uint32_t         stk_size,
-                                uint32_t         stk_limit);
+                                CPU_STK         *p_stk_base,
+                                CPU_STK_SIZE     stk_size,
+                                CPU_STK_SIZE     stk_limit);
 
 
 /*
@@ -228,7 +285,9 @@ void ace_os_rdylist_insert_tail(ace_os_tcb *p_tcb);
 
 void ace_os_rdylist_remove(ace_os_tcb *p_tcb);
 
+/* --------------------------------------------------- SCHEDULING --------------------------------------------------- */
 
+void ace_os_sched_round_robin(ace_os_rdy_list *p_rdy_list);
 
 #ifdef __cplusplus
 }
