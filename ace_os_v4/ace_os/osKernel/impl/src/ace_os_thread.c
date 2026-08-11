@@ -71,9 +71,13 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
                           VOID *stack_start,
                           ULONG stack_size,
                           UINT priority,
-                          ULONG time_slice  
+                          ULONG time_slice,
+                          UINT auto_start
                         )
 {
+    ACE_OS_THREAD *next_thread;
+    ACE_OS_THREAD *prev_thread;
+
     UCHAR *temp_ptr;
 
 
@@ -99,12 +103,44 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
     /* Set State */
     thread_ptr->ace_os_thread_state = ACE_OS_SUSPENDED;
 
-    ace_os_thread_stack_build();
+    ace_os_thread_stack_build(thread_ptr, ace_os_thread_shell_entry);
 
     // thread_ptr->ace_os_thread_id = ACE_
 
     /* Place the thread on the list of created threads */
-    
+    if (ace_os_thread_created_count == ACE_OS_EMPTY)
+    {   
+        ace_os_thread_created_ptr                   = thread_ptr;
+        thread_ptr->ace_os_thread_created_next      = thread_ptr;
+        thread_ptr->ace_os_thread_created_previous  = thread_ptr;
+    }
+    else
+    {
+        /* This list is not Null, add to the end of the list. */
+        next_thread                 = ace_os_thread_created_ptr;
+        prev_thread                 = next_thread->ace_os_thread_created_previous;
+
+        /* Place the new thread in the list. */
+        next_thread->ace_os_thread_created_previous = thread_ptr;
+        prev_thread->ace_os_thread_created_next     = thread_ptr;
+
+        /* Setup this thread's created links. */
+        thread_ptr->ace_os_thread_created_previous  = prev_thread;
+        thread_ptr->ace_os_thread_created_next      = next_thread;
+    }
+
+    ace_os_thread_created_count++;
+
+    if (auto_start == ACE_OS_AUTO_START)
+    {
+
+    }
+    else
+    {
+
+    }
+
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_thread_delete(void)
