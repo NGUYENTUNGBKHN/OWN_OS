@@ -24,6 +24,12 @@ extern "C"
 #define ACE_OS_INITIALIZE_ALMOST_DONE               ((ULONG) 0xF0F0F0F1UL)
 #define ACE_OS_INITIALIZE_IS_FINISHED               ((ULONG) 0x00000000UL)
 
+/* Define internal initialization function prototypes.  */
+
+VOID        ace_os_initialize_high_level(VOID);
+VOID        ace_os_initialize_kernel_setup(VOID);
+VOID        ace_os_initialize_low_level(VOID);
+
 #ifdef __cplusplus
 }
 #endif
