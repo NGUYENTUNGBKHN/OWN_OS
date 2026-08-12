@@ -18,6 +18,12 @@ extern "C"
 
 /* CODE */
 
+/* Define constants that indicate initialization is in progress.  */
+
+#define ACE_OS_INITIALIZE_IN_PROGRESS               ((ULONG) 0xF0F0F0F0UL)
+#define ACE_OS_INITIALIZE_ALMOST_DONE               ((ULONG) 0xF0F0F0F1UL)
+#define ACE_OS_INITIALIZE_IS_FINISHED               ((ULONG) 0x00000000UL)
+
 #ifdef __cplusplus
 }
 #endif

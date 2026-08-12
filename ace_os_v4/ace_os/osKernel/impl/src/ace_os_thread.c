@@ -80,6 +80,7 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
 
     UCHAR *temp_ptr;
 
+    /* ace_os_interrupt_save_area */
 
     /* Initilaize stack frame */
     ACE_OS_MEMSET(stack_start, ((UCHAR)ACE_OS_STACK_FILL), stack_size);
@@ -137,6 +138,17 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
     }
     else
     {
+        /* Restore interrupt */
+
+        /* Perform any additional activities for tool or user purpose. */
+
+        /* Disable interrupt */
+
+        /* Re-enable preemption. */
+
+        /* Restore interrupt */
+
+        /* Check for preemption */
 
     }
 
@@ -203,7 +215,7 @@ UINT ace_os_thread_resume(void)
 
 }
 
-VOID ace_os_thread_shell_entry(void)
+VOID ace_os_thread_shell_entry(ACE_OS_THREAD *thread_ptr, VOID (*function_ptr)(VOID))
 {
 
 }

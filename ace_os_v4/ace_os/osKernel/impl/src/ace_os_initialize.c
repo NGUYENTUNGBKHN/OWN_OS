@@ -56,9 +56,12 @@ VOID ace_os_initialize_high_level()
 
 }
 
-VOID ace_os_initialize_kernel_enter()
+VOID ace_os_initialize_kernel_enter(VOID)
 {
-
+    if (ace_os_thread_system_state == ACE_OS_INITIALIZE_ALMOST_DONE)
+    {
+        
+    }
 }
 
 VOID ace_os_initialize_kernel_setup()

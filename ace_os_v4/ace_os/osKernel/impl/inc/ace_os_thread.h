@@ -37,7 +37,9 @@ UINT ace_os_thread_priority_change(void);
 UINT ace_os_thread_relinquish(void);
 UINT ace_os_thread_reset(void);
 UINT ace_os_thread_resume(void);
-VOID ace_os_thread_shell_entry(void);
+
+VOID ace_os_thread_shell_entry(ACE_OS_THREAD *thread_ptr, VOID (*function_ptr)(VOID));
+
 UINT ace_os_thread_sleep(void);
 VOID ace_os_thread_stack_analyze(void);
 VOID ace_os_thread_stack_error_handler(void);
@@ -61,6 +63,15 @@ ACE_OS_DECLARE ACE_OS_THREAD * ace_os_thread_created_ptr;
 /* Define the variable that holds the number of created threads. */
 
 ACE_OS_DECLARE ULONG ace_os_thread_created_count;
+
+
+/* Define the current state variable.  When this value is 0, a thread
+   is executing or the system is idle.  Other values indicate that
+   interrupt or initialization processing is active.  This variable is
+   initialized to ACE_OS_INITIALIZE_IN_PROGRESS to indicate initialization is
+   active.  */
+
+ACE_OS_DECLARE volatile ULONG  ace_os_thread_system_state;
 
 #ifdef __cplusplus
 }
