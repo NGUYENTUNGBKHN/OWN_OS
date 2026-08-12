@@ -14,6 +14,7 @@
 ***************************************************************************************************************/
 #include "ace_os_api.h"
 #include "ace_os_initialize.h"
+#include "ace_os_thread.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
 ***************************************************************************************************************/
@@ -60,7 +61,11 @@ VOID ace_os_initialize_kernel_enter(VOID)
 {
     if (ace_os_thread_system_state == ACE_OS_INITIALIZE_ALMOST_DONE)
     {
-        
+        ace_os_thread_system_state = ACE_OS_INITIALIZE_IN_PROGRESS;
+
+        ace_os_initialize_low_level();
+
+        ace_os_initialize_high_level();
     }
 }
 
