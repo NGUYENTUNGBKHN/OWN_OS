@@ -100,6 +100,49 @@ extern "C"
 ************************************************************************************************************************
 */
 
+/* Define the block memory pool structure utilized by the application.  */
+
+typedef struct ACE_OS_BLOCK_POOL_STRUCT
+{
+    /* Define the block pool ID used for error checking. */
+    ULONG           ace_os_block_pool_id;
+
+    /* Define the block pool's name. */
+    CHAR            *ace_os_block_pool_name;
+
+    /* Define the number of available memory blocks in the pool. */
+    UINT            ace_os_block_pool_available;
+
+    /* Save the initial number of block */
+    UINT            ace_os_block_pool_total;
+
+    /* Define the head pointer of the available block pool. */
+    UCHAR           *ace_os_block_pool_available_list;
+
+    /* Save the start address of the block pool's memory area. */
+    UCHAR           *ace_os_block_pool_start;
+
+    /* Save the block pool's size in bytes */
+    ULONG           ace_os_block_pool_size;
+
+    /* Save the individual memory block size - rounded for alignment. */
+    UINT            ace_os_block_pool_block_size;
+
+    struct ACE_OS_BLOCK_POOL_STRUCT
+                    ace_os_block_pool_suspension_list;
+    UINT            ace_os_block_pool_suspension_cnt;
+
+    /* Define the created list next and previous pointer. */
+    struct ACE_OS_BLOCK_POOL_STRUCT
+                    *ace_os_block_pool_created_next,
+                    *ace_os_block_pool_created_previous;
+
+}ACE_OS_BLOCK_POOL;
+
+/* ThreadX thread control block structure follows.  Additional fields
+   can be added providing they are added after the information that is
+   referenced in the port-specific assembly code.  */
+
 typedef struct ACE_OS_THREAD_STRUCT
 {
     ULONG       ace_os_thread_id;                       /* Control block ID                 */
@@ -145,6 +188,25 @@ typedef struct ACE_OS_THREAD_STRUCT
 #define ACE_OS_VOID_TO_CHAR_POINTER_CONVERT(tmp)        ((UCHAR *)((VOID *)(tmp)))
 #define ACE_OS_CHAR_TO_VOID_POINTER_CONVERT(tmp)        ((VOID *)(tmp))
 
+
+/*
+************************************************************************************************************************
+************************************************************************************************************************
+*                           A C E - O S   E X T E R N A L   F U N C T I O N
+************************************************************************************************************************
+************************************************************************************************************************
+*/
+
+/* Declare the ace_os_application_define function as having C linkage. */
+
+VOID ace_os_application_define(VOID *first_unused_memory);
+
+/* Define the function prototypes of the ThreadX API. */
+
+/* Define block memory pool management function prototypes. */
+
+UINT ace_os_block_pool_create(ACE_OS_BLOCK_POOL *pool_ptr, CHAR *name_ptr, ULONG block_size,
+                            VOID *pool_start, ULONG pool_size);
 
 #ifdef __cplusplus
 }

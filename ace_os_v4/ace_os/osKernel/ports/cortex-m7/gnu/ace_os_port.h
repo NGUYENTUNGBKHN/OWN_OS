@@ -33,6 +33,19 @@ typedef unsigned long               ULONG;
 typedef short                       SHORT;
 typedef unsigned short              USHORT;
 
+/* Define the interrupt disable/restore macros for each compiler. */
+
+#if defined(__GNUC__) || defined(__ICCARM__)
+
+
+
+#define ACE_OS_INTERRUPT_SAVE_AREA          UINT interrupt_save;
+#define ACE_OS_DISABLE                      interrupt_save = __disable_interrupt();
+#define ACE_OS_RESTORE                      __restore_interrupt(interrupt_save);
+#else
+
+#endif
+
 #ifdef __cplusplus
 }
 #endif

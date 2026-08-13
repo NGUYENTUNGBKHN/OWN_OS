@@ -9,7 +9,8 @@
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "__GNUC__"
             ],
             "cStandard": "c99",
             "cppStandard": "c++98",

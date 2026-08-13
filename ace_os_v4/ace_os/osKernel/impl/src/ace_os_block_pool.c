@@ -12,7 +12,7 @@
 /***************************************************************************************************************
 **                                                   INCLUDES
 ***************************************************************************************************************/
-#include "ace_os_port.h"
+#include "ace_os_api.h"
 #include "ace_os_block_pool.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
@@ -51,6 +51,9 @@
 UINT ace_os_block_allocate()
 {
 
+    /* ACE_OS_INTERRUPT_SAVE_AREA */
+
+
 }
 
 VOID ace_os_block_pool_clenup()
@@ -58,9 +61,10 @@ VOID ace_os_block_pool_clenup()
 
 }
 
-UINT ace_os_block_pool_create()
+UINT ace_os_block_pool_create(ACE_OS_BLOCK_POOL *pool_ptr, CHAR *name_ptr, ULONG block_size,
+                            VOID *pool_start, ULONG pool_size)
 {
-
+    
 }
 
 UINT ace_os_block_pool_delete()
