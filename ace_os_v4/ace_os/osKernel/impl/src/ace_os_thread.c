@@ -81,6 +81,7 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
     UCHAR *temp_ptr;
 
     /* ace_os_interrupt_save_area */
+    ACE_OS_INTERRUPT_SAVE_AREA
 
     /* Initilaize stack frame */
     ACE_OS_MEMSET(stack_start, ((UCHAR)ACE_OS_STACK_FILL), stack_size);
@@ -106,6 +107,9 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
 
     ace_os_thread_stack_build(thread_ptr, ace_os_thread_shell_entry);
 
+    /* Prepare to make this thread a member of the created thread list.  */
+    ACE_OS_DISABLE
+
     // thread_ptr->ace_os_thread_id = ACE_
 
     /* Place the thread on the list of created threads */
@@ -130,11 +134,13 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
         thread_ptr->ace_os_thread_created_next      = next_thread;
     }
 
+    /* Increment the thread created count.  */
     ace_os_thread_created_count++;
 
     if (auto_start == ACE_OS_AUTO_START)
     {
-
+        /* Restore interrupt */
+        ACE_OS_RESTORE
     }
     else
     {
@@ -147,6 +153,7 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
         /* Re-enable preemption. */
 
         /* Restore interrupt */
+        ACE_OS_RESTORE
 
         /* Check for preemption */
 

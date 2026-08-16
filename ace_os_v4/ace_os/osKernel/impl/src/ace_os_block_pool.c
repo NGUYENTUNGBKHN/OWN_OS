@@ -64,7 +64,16 @@ VOID ace_os_block_pool_clenup()
 UINT ace_os_block_pool_create(ACE_OS_BLOCK_POOL *pool_ptr, CHAR *name_ptr, ULONG block_size,
                             VOID *pool_start, ULONG pool_size)
 {
-    
+    ACE_OS_INTERRUPT_SAVE_AREA
+
+    /* Initialize block pool control block to all zeros. */
+    ACE_OS_MEMSET(pool_ptr, 0, (sizeof(ACE_OS_BLOCK_POOL)));
+
+    /* Round the block size up to something that is evenly divisiable by
+       An ALIGN_TYPE (typically this is a 32-bit ULONG). This helps guarantee proper aligment. */
+    block_size = ()
+
+    return ;
 }
 
 UINT ace_os_block_pool_delete()

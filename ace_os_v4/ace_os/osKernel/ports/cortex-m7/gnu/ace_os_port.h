@@ -37,6 +37,53 @@ typedef unsigned short              USHORT;
 
 #if defined(__GNUC__) || defined(__ICCARM__)
 
+__attribute__( ( always_inline ) ) static inline unsigned int __get_interrupt_posture()
+{
+    unsigned int posture;
+#ifdef ACE_OS_PORT_USE_BASEPRI
+    __asm__ volatile ("MRS  %0, BASEPRI ": "=r" (posture));
+#else   
+    __asm__ volatile ("MRS  %0, PRIMASK ": "=r" (posture));
+#endif 
+    return posture;
+}
+
+#ifdef ACE_OS_PORT_USE_BASEPRI
+__attribute__( ( always_inline ) ) static inline void __set_basepri_value(unsigned int basepri_value)
+{
+    __asm__ volatile ("MSR  BASEPRI,%0 ": : "r" (basepri_value) : "memory");
+}
+#else
+
+__attribute__( ( always_inline ) ) static inline void __enable_interrupts(void)
+{
+    __asm__ volatile ("CPSIE  i": : : "memory");
+}
+#endif 
+
+__attribute__( ( always_inline ) ) static inline void __restore_interrupt(unsigned int int_posture)
+{
+#ifdef ACE_OS_PORT_USE_BASEPRI
+    __set_basepri_value(int_posture);
+    __asm__ volatile ("" : : : "memory");
+#else
+    __asm__ volatile ("MRS  PRIMASK,%0": : "r" (int_posture): "memory");
+#endif 
+}
+
+__attribute__( ( always_inline ) ) static inline unsigned int __disable_interrupt(void)
+{
+unsigned int int_posture;
+
+    int_posture = __get_interrupt_posture();
+
+#ifdef TX_PORT_USE_BASEPRI
+    __set_basepri_value(TX_PORT_BASEPRI);
+#else
+    __asm__ volatile ("CPSID i" : : : "memory");
+#endif
+    return(int_posture);
+}
 
 
 #define ACE_OS_INTERRUPT_SAVE_AREA          UINT interrupt_save;
