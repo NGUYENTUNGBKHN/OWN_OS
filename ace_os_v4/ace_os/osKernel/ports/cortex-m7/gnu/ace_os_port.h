@@ -33,6 +33,10 @@ typedef unsigned long               ULONG;
 typedef short                       SHORT;
 typedef unsigned short              USHORT;
 
+/* Define Align type. --> 32-bit */
+#define ALIGN_TYPE                  ULONG
+
+
 /* Define the interrupt disable/restore macros for each compiler. */
 
 #if defined(__GNUC__) || defined(__ICCARM__)

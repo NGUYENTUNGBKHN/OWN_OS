@@ -66,12 +66,47 @@ UINT ace_os_block_pool_create(ACE_OS_BLOCK_POOL *pool_ptr, CHAR *name_ptr, ULONG
 {
     ACE_OS_INTERRUPT_SAVE_AREA
 
+    UINT    blocks;
+    UCHAR   *block_ptr;
+    UCHAR   **block_link_ptr;
+    UCHAR   *next_block_ptr;
+    ULONG total_blocks;
+
     /* Initialize block pool control block to all zeros. */
     ACE_OS_MEMSET(pool_ptr, 0, (sizeof(ACE_OS_BLOCK_POOL)));
 
     /* Round the block size up to something that is evenly divisiable by
        An ALIGN_TYPE (typically this is a 32-bit ULONG). This helps guarantee proper aligment. */
-    block_size = ()
+    block_size = (((block_size + (sizeof(ALIGN_TYPE))) - ((ALIGN_TYPE)1))/(sizeof(ALIGN_TYPE)) * sizeof(ULONG));
+
+    /* Round the pool size down to something that is evenly divisible by 
+        an ALIGN_TYPE (typically this is a 32-bit ULONG). */
+    pool_size = (pool_size/(sizeof(ALIGN_TYPE)))* (sizeof(ALIGN_TYPE));
+
+    /* Setup the basic block pool field */
+    pool_ptr->ace_os_block_pool_name        = name_ptr;
+    pool_ptr->ace_os_block_pool_start       = ACE_OS_VOID_TO_CHAR_POINTER_CONVERT(pool_start);
+    pool_ptr->ace_os_block_pool_size        = pool_size;
+    pool_ptr->ace_os_block_pool_block_size  = (UINT) block_size;
+    
+    /* Calculate the total number of blocks. */
+    total_blocks = pool_size/(block_size + (sizeof(UCHAR*)));
+
+    /* Walk through the pool area, setting up the avaiable block list. */
+    blocks = ((UINT)0);
+    block_ptr = ACE_OS_VOID_TO_CHAR_POINTER_CONVERT(pool_start);
+    next_block_ptr = ACE_OS_UCHAR_POINTER_ADD(block_ptr, (block_size + (sizeof(UCHAR*))));
+    while(blocks < (UINT) total_blocks)
+    {
+        blocks ++;
+
+        block_link_ptr = block_ptr;
+        *block_link_ptr = next_block_ptr;
+
+        block_ptr = next_block_ptr;
+
+        next_block_ptr = ACE_OS_UCHAR_POINTER_ADD(block_ptr, (block_size + (sizeof(UCHAR*))));
+    }
 
     return ;
 }
