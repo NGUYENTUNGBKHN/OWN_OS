@@ -18,7 +18,20 @@ extern "C"
 
 /* CODE */
 
+#ifdef ACE_OS_BLOCK_POOL_INIT
+#define BLOCK_POOL_DECLARE
+#else
+#define BLOCK_POOL_DECLARE extern
+#endif
 
+/* Define the head pointer of the created block pool list.  */
+
+BLOCK_POOL_DECLARE  ACE_OS_BLOCK_POOL *         ace_os_block_pool_created_ptr;
+
+
+/* Define the variable that holds the number of created block pools. */
+
+BLOCK_POOL_DECLARE  ULONG                   ace_os_block_pool_created_count;
 
 #ifdef __cplusplus
 }

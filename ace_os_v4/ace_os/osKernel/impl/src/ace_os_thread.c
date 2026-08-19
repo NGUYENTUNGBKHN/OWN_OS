@@ -98,9 +98,9 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
     thread_ptr->ace_os_thread_stack_size    = stack_size;
 
     /* Calculate the end of the thread's stack area */
-    temp_ptr = ACE_OS_VOID_TO_CHAR_POINTER_CONVERT(stack_start);
+    temp_ptr = ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(stack_start);
     temp_ptr = (ACE_OS_UCHAR_POINTER_ADD(temp_ptr, (stack_size - ((ULONG)1))));
-    thread_ptr->ace_os_thread_stack_end = ACE_OS_CHAR_TO_VOID_POINTER_CONVERT(temp_ptr);
+    thread_ptr->ace_os_thread_stack_end = ACE_OS_UCHAR_TO_VOID_POINTER_CONVERT(temp_ptr);
 
     /* Set State */
     thread_ptr->ace_os_thread_state = ACE_OS_SUSPENDED;

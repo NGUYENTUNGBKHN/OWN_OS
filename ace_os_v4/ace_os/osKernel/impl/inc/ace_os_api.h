@@ -180,13 +180,18 @@ typedef struct ACE_OS_THREAD_STRUCT
 ************************************************************************************************************************
 */
 
-#define ACE_OS_MEMSET(a, b, c)                          memset((a), (b), (c))
+#define ACE_OS_MEMSET(a, b, c)                                 memset((a), (b), (c))
 
-#define ACE_OS_UCHAR_POINTER_ADD(a, b)                  (((UCHAR *)(a)) + ((UINT)(b)))
+#define ACE_OS_UCHAR_POINTER_ADD(a, b)                         (((UCHAR *)(a)) + ((UINT)(b)))
+#define ACE_OS_UCHAR_POINTER_SUB(a, b)                         (((UCHAR *)(a)) - ((UINT)(b)))
+#define ACE_OS_ULONG_POINTER_ADD(a, b)                         (((ULONG *)(a)) + ((UINT)(b)))
+#define ACE_OS_ULONG_POINTER_SUB(a, b)                         (((ULONG *)(a)) - ((UINT)(b)))
 
 /* Convert void between char */
-#define ACE_OS_VOID_TO_CHAR_POINTER_CONVERT(tmp)        ((UCHAR *)((VOID *)(tmp)))
-#define ACE_OS_CHAR_TO_VOID_POINTER_CONVERT(tmp)        ((VOID *)(tmp))
+#define ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(tmp)              ((UCHAR *)((VOID *)(tmp)))
+#define ACE_OS_UCHAR_TO_VOID_POINTER_CONVERT(tmp)              ((VOID *)(tmp))
+
+#define ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(temp)   ((UCHAR**)((void*)(temp)))
 
 
 /*
