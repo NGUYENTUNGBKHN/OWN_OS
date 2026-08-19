@@ -57,12 +57,29 @@ ULONG            ace_os_block_pool_created_count;
 **                                             FUNCTION DEFINITIONS
 ***************************************************************************************************************/
 
-UINT ace_os_block_allocate()
+UINT ace_os_block_allocate(ACE_OS_BLOCK_POOL *pool_ptr, VOID **block_ptr, ULONG wait_option)
 {
+    ACE_OS_INTERRUPT_SAVE_AREA
 
-    /* ACE_OS_INTERRUPT_SAVE_AREA */
+    UINT    status;
+    UCHAR   *work_ptr;
 
+    /* Determine if there is an available block. */
+    if (pool_ptr->ace_os_block_pool_available != ((UINT)0))
+    {
+        /* Decrement the available count. */
+        pool_ptr->ace_os_block_pool_available --;
 
+        /* Pickup the current block pointer. */
+        work_ptr = pool_ptr->ace_os_block_pool_available_list;
+
+    }
+    else
+    {
+
+    }
+
+    return status;
 }
 
 VOID ace_os_block_pool_clenup()
@@ -165,10 +182,16 @@ UINT ace_os_block_pool_create(ACE_OS_BLOCK_POOL *pool_ptr, CHAR *name_ptr, ULONG
             next_pool->ace_os_block_pool_created_previous = pool_ptr;
             prev_pool->ace_os_block_pool_created_next = pool_ptr;
 
-            /*  */
+            /* Setup this block pool's created links. */
             pool_ptr->ace_os_block_pool_created_next = next_pool;
             pool_ptr->ace_os_block_pool_created_previous = prev_pool;
         }
+
+        /* Increment the created count. */
+        ace_os_block_pool_created_count ++;
+
+        /* Restore interrupt. */
+        ACE_OS_RESTORE
         
         status = ACE_OS_SUCCESS;
     }
