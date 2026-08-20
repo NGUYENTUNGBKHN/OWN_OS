@@ -29,8 +29,10 @@ extern "C"
 */
 
 /* API input parameters and general constants.  */
+#define ACE_OS_NO_WAIT                      ((ULONG)  0)
 #define ACE_OS_EMPTY                        ((ULONG)  0)
 #define ACE_OS_AUTO_START                   ((UINT)   1)
+#define ACE_OS_NULL                         ((ULONG)  0)
 #define ACE_OS_STACK_FILL                   ((ULONG)  0xEFEFEFEFUL)
 
 /* Thread execution state values.  */
@@ -139,6 +141,55 @@ typedef struct ACE_OS_BLOCK_POOL_STRUCT
 
 }ACE_OS_BLOCK_POOL;
 
+/* Define the byte memory pool structure utilized by the application. */
+typedef struct ACE_OS_BYTE_POOL_STRUCT
+{
+   /* Defined the byte pool ID used for error checking. */
+   ULONG       ace_os_byte_pool_id;
+
+   /* Define the byte pool's name. */
+   CHAR        *ace_os_byte_pool_name;
+
+   /* Define the number of available bytes in the pool. */
+   ULONG       *ace_os_byte_pool_available;
+
+   /* Define the number of framents in the pool. */
+   UINT        ace_os_byte_pool_framents;
+
+   /* Define the head pointer of byte pool. */
+   UCHAR       *ace_os_byte_pool_list;
+
+   /* Define the search pointer used for initial searching for memory
+      in a byte pool. */
+   UCHAR       *ace_os_byte_pool_search;
+
+   /* Save the start address of the byte pool's memory area. */
+   UCHAR       *ace_os_byte_pool_start;
+
+   /* Save the byte pool's size in bytes. */
+   ULONG       ace_os_byte_pool_size;
+
+   /* This is used to mark the owner of the byte memory pool during
+      a search. If this value changes during the search, the local search
+      pointer must be reset. */
+   struct ACE_OS_THREAD_STRUCT
+               *ace_os_byte_pool_owner;
+   
+   /* Define the byte pool suspension list head along with a count of
+      how many threads are suspended. */
+   struct ACE_OS_BYTE_POOL_STRUCT
+               *ace_os_byte_pool_suspension_list;
+   UINT        ace_os_byte_pool_suspension_count;
+
+   /* Define the created list next and previous pointer. */
+   struct ACE_OS_BLOCK_POOL_STRUCT
+               *ace_os_byte_block_created_next,
+               *ace_os_byte_block_created_prev;
+
+}ACE_OS_BYTE_POOL;
+
+
+
 /* ThreadX thread control block structure follows.  Additional fields
    can be added providing they are added after the information that is
    referenced in the port-specific assembly code.  */
@@ -188,11 +239,13 @@ typedef struct ACE_OS_THREAD_STRUCT
 #define ACE_OS_ULONG_POINTER_SUB(a, b)                         (((ULONG *)(a)) - ((UINT)(b)))
 
 /* Convert void between char */
-#define ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(tmp)              ((UCHAR *)((VOID *)(tmp)))
-#define ACE_OS_UCHAR_TO_VOID_POINTER_CONVERT(tmp)              ((VOID *)(tmp))
+#define ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(tmp)              ((UCHAR *) ((VOID *) (tmp)))
+#define ACE_OS_UCHAR_TO_VOID_POINTER_CONVERT(tmp)              ((VOID *) (tmp))
 
-#define ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(temp)   ((UCHAR**)((void*)(temp)))
-
+#define ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(temp)   ((UCHAR**) ((VOID *) (temp)))
+#define ACE_OS_INDIRECT_VOID_TO_UCHAR_POINTER_CONVERT(temp)    ((UCHAR**) ((VOID *) (temp)))
+#define ACE_OS_BLOCK_POOL_TO_UCHAR_POINTER_CONVERT(temp)       ((UCHAR *) ((VOID *) (temp)))
+#define ACE_OS_UCHAR_TO_BLOCK_POOL_POINTER_CONVERT(temp)       ((ACE_OS_BLOCK_POOL *) ((VOID *) (temp)))
 
 /*
 ************************************************************************************************************************

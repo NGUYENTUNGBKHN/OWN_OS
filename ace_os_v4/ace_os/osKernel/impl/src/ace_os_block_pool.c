@@ -57,12 +57,28 @@ ULONG            ace_os_block_pool_created_count;
 **                                             FUNCTION DEFINITIONS
 ***************************************************************************************************************/
 
+/*
+****************************************************************************************************************
+ *                                      ALLOCATE BLOCK POOL
+ * @brief      
+ * @param      pool_ptr    
+ * @param      block_ptr    
+ * @param      wait_option    
+ * @return     UINT
+****************************************************************************************************************
+*/
 UINT ace_os_block_allocate(ACE_OS_BLOCK_POOL *pool_ptr, VOID **block_ptr, ULONG wait_option)
 {
     ACE_OS_INTERRUPT_SAVE_AREA
 
     UINT    status;
     UCHAR   *work_ptr;
+    UCHAR   *temp_ptr;
+    UCHAR   **return_ptr;
+    UCHAR   **next_block_ptr;
+
+    /* Disable interrupts to get a block from the pool.  */
+    ACE_OS_DISABLE
 
     /* Determine if there is an available block. */
     if (pool_ptr->ace_os_block_pool_available != ((UINT)0))
@@ -73,10 +89,40 @@ UINT ace_os_block_allocate(ACE_OS_BLOCK_POOL *pool_ptr, VOID **block_ptr, ULONG 
         /* Pickup the current block pointer. */
         work_ptr = pool_ptr->ace_os_block_pool_available_list;
 
+        /* Return the first available block to the caller. */
+        temp_ptr = ACE_OS_UCHAR_POINTER_ADD(work_ptr, (sizeof(UCHAR*)));
+        return_ptr = ACE_OS_INDIRECT_VOID_TO_UCHAR_POINTER_CONVERT(block_ptr);
+        *return_ptr = temp_ptr;
+
+        /* Modify the available list to point at the next block in the pool. */
+        next_block_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(work_ptr);
+        pool_ptr->ace_os_block_pool_available_list = *next_block_ptr;
+
+        /* Save the pool's address in the block for when it is released! */
+        temp_ptr = ACE_OS_BLOCK_POOL_TO_UCHAR_POINTER_CONVERT(pool_ptr);
+        *next_block_ptr = temp_ptr;
+
+        /* Set status to success. */
+        status = ACE_OS_SUCCESS;
+
+        /* Restore */
+        ACE_OS_RESTORE
     }
     else
     {
 
+        if (wait_option != ACE_OS_NO_WAIT)
+        {
+
+        }
+        else
+        {
+            /* Immediate return, return error completion. */
+            status = ACE_OS_NO_MEMORY;
+
+            /* Restore */
+            ACE_OS_RESTORE
+        }
     }
 
     return status;
@@ -87,6 +133,20 @@ VOID ace_os_block_pool_clenup()
 
 }
 
+/*
+****************************************************************************************************************
+ *                                      CREATE BLOCK POOL
+ *  
+ * @brief       Thí function creates a pool of fixed-size memory blocks in the specified memory area.      
+ * @param      pool_ptr         Pointer to pool control block
+ * @param      name_ptr    
+ * @param      block_size    
+ * @param      pool_start    
+ * @param      pool_size    
+ * @return     UINT
+ * 
+****************************************************************************************************************
+*/
 UINT ace_os_block_pool_create(ACE_OS_BLOCK_POOL *pool_ptr, CHAR *name_ptr, ULONG block_size,
                             VOID *pool_start, ULONG pool_size)
 {
@@ -233,9 +293,52 @@ UINT ace_block_pool_prioritize()
 
 }
 
-UINT ace_block_release()
+UINT ace_block_release(VOID *block_ptr)
 {
+    ACE_OS_INTERRUPT_SAVE_AREA
 
+    ACE_OS_BLOCK_POOL   *pool_ptr;
+    ACE_OS_THREAD       *thread_ptr;
+    UCHAR               *work_ptr;
+    UCHAR               *return_block_ptr;
+    UCHAR               **next_block_ptr;
+
+    /* Disable interrupts to put this block back in the pool.  */
+    ACE_OS_DISABLE
+
+    /* Pickup the pool pointer which is just previous to the starting
+       address of the block that the caller sees. */
+    work_ptr =        ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(block_ptr);
+    work_ptr =        ACE_OS_UCHAR_POINTER_SUB(work_ptr, (sizeof(UCHAR *)));
+    next_block_ptr =  ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(work_ptr);
+    pool_ptr =        ACE_OS_UCHAR_TO_BLOCK_POOL_POINTER_CONVERT((*next_block_ptr));
+
+
+    /* Determine if there are any threads suspended on the block pool.  */
+    thread_ptr =  pool_ptr -> ace_os_block_pool_suspension_list;
+    if (thread_ptr != ACE_OS_NULL)
+    {
+
+    }
+    else
+    {
+        /* No thread is suspended for a memory block.  */
+
+        /* Put the block back in the available list.  */
+        *next_block_ptr =  pool_ptr->ace_os_block_pool_available_list;
+
+        /* Adjust the head pointer.  */
+        pool_ptr->ace_os_block_pool_available_list =  work_ptr;
+
+        /* Increment the count of available blocks.  */
+        pool_ptr->ace_os_block_pool_available++;
+
+        /* Restore interrupts.  */
+        ACE_OS_RESTORE
+    }
+
+    /* Return successful completion status.  */
+    return(ACE_OS_SUCCESS);
 }
 
 /***************************************************************************************************************
