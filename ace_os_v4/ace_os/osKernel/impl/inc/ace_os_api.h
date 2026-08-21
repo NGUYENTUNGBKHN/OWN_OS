@@ -246,7 +246,9 @@ typedef struct ACE_OS_THREAD_STRUCT
 #define ACE_OS_INDIRECT_VOID_TO_UCHAR_POINTER_CONVERT(temp)    ((UCHAR**) ((VOID *) (temp)))
 #define ACE_OS_BLOCK_POOL_TO_UCHAR_POINTER_CONVERT(temp)       ((UCHAR *) ((VOID *) (temp)))
 #define ACE_OS_UCHAR_TO_BLOCK_POOL_POINTER_CONVERT(temp)       ((ACE_OS_BLOCK_POOL *) ((VOID *) (temp)))
-
+#define ACE_OS_VOID_TO_BYTE_POOL_POINTER_CONVERT(temp)         ((ACE_OS_BYTE_POOL *) ((VOID *) (temp)))
+#define ACE_OS_BYTE_POOL_TO_UCHAR_POINTER_CONVERT(temp)        ((UCHAR *) ((VOID *) (temp)))
+#define ACE_OS_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(temp)       ((ALIGN_TYPE *) ((VOID *) (temp)))
 /*
 ************************************************************************************************************************
 ************************************************************************************************************************

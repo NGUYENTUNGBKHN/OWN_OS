@@ -63,6 +63,9 @@ UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *p
     ACE_OS_INTERRUPT_SAVE_AREA
 
     UCHAR       *block_ptr;
+    UCHAR       *temp_ptr;
+    UCHAR       **block_indirect_ptr;
+    ALIGN_TYPE  *free_ptr;
 
     /* Initialize the byte pool control block to all zeros. */
     ACE_OS_MEMSET(pool_ptr, 0, sizeof(ACE_OS_BYTE_POOL));
@@ -98,7 +101,26 @@ UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *p
     block_ptr = ACE_OS_UCHAR_POINTER_ADD(block_ptr, pool_size);
 
     /* Backup the end of the pool pointer and build the pre-allocated block. */
-    
+    block_ptr = ACE_OS_UCHAR_POINTER_SUB(block_ptr, (sizeof(ALIGN_TYPE)));
+
+    /* Cast the pool pointer into a ULONG. */
+    temp_ptr             = ACE_OS_BYTE_POOL_TO_UCHAR_POINTER_CONVERT(pool_ptr);
+    block_indirect_ptr   = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(block_ptr);
+    *block_indirect_ptr  = temp_ptr;
+
+    block_ptr            = ACE_OS_UCHAR_POINTER_SUB(block_ptr, (sizeof(UCHAR*)));
+    block_indirect_ptr   = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(block_ptr);
+    *block_indirect_ptr  = ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(pool_start);
+
+    /* Now setup the large available block in the pool. */
+    temp_ptr             = ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(pool_start);
+    block_indirect_ptr   = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(temp_ptr);
+    *block_indirect_ptr  = block_ptr;
+    block_ptr            = ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(pool_start);
+    block_ptr            = ACE_OS_UCHAR_POINTER_ADD(block_ptr, (sizeof(UCHAR*)));
+    free_ptr             = ACE_OS_UCHAR_TO_AL
+
+
 
 }
 
