@@ -18,6 +18,10 @@ extern "C"
 
 /* CODE */
 
+#ifndef ACE_OS_BYTE_BLOCK_FREE
+#define ACE_OS_BYTE_BLOCK_FREE                      ((ULONG) 0xFFFFEEEEUL)
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -38,6 +38,11 @@
 **                                        INTERNAL VARIABLE DEFINITIONS
 ***************************************************************************************************************/
 
+/* Define the variable that holds the number of created byte pools. */
+ULONG               ace_os_byte_pool_created_count;
+
+/* Define the head pointer of the created byte pool list.  */
+ACE_OS_BYTE_POOL    *ace_os_byte_pool_created_ptr;
 
 /***************************************************************************************************************
 **                                         INTERNAL FUNCTION PROTOTYPES
@@ -48,9 +53,68 @@
 **                                             FUNCTION DEFINITIONS
 ***************************************************************************************************************/
 
-UINT ace_os_byte_allocate()
+UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG memory_size, ULONG wait_option)
 {
+    ACE_OS_INTERRUPT_SAVE_AREA
 
+    UINT status;
+    UINT finish;
+    ACE_OS_BYTE_POOL *work_ptr;
+
+    ACE_OS_THREAD *thread_ptr;
+
+    /* Round the memory sizer up to the next size that is ewnely divisible by
+    an ALIGN_TYPE (this is typically a 32-bit ULONG). This guarantees proper alignment. */
+    memory_size = (((memory_size + (sizeof(ALIGN_TYPE))) - ((ALIGN_TYPE) 1))/(sizeof(ALIGN_TYPE))) * (sizeof(ALIGN_TYPE));
+
+    /* Pickup thread pointer. */
+    // ACE_OS_THREAD_GET_CURRENT(thread_ptr);
+
+    /* Disable interrupts. */
+    ACE_OS_DISABLE
+
+    /* Set the search finished flag to flase */
+    finish = ACE_OS_FALSE;
+
+    /* Loop to handle cases where the owner of the pool changed. */
+    do
+    {
+        /* Indicate that this thread is the current owner. */
+        pool_ptr->ace_os_byte_pool_owner = thread_ptr;
+
+        /* Restore interrupt */
+        ACE_OS_RESTORE
+
+        /* At this point, the executing thread owns the pool and can perform a search
+            for free memory. */
+        work_ptr = ace_os_byte_pool_search(pool_ptr, memory_size);
+
+        /* Lockout interrupt. */
+        ACE_OS_DISABLE
+
+        /* Determine of we are finished. */
+        if (work_ptr != ACE_OS_NULL)
+        {
+            finish = ACE_OS_TRUE;
+        }
+        else
+        {
+            /* No block was found, does this thread still own the pool. */
+            if (pool_ptr->ace_os_byte_pool_owner == thread_ptr)
+            {
+                /*  */
+                finish = ACE_OS_TRUE;
+            }
+        }
+
+    }while(!finish);
+    
+
+
+
+    ACE_OS_RESTORE
+
+    return status;
 }
 
 VOID ace_os_byte_pool_clenup()
@@ -61,6 +125,9 @@ VOID ace_os_byte_pool_clenup()
 UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *pool_start, ULONG pool_size)
 {
     ACE_OS_INTERRUPT_SAVE_AREA
+
+    ACE_OS_BYTE_POOL *next_pool;
+    ACE_OS_BYTE_POOL *prev_pool;
 
     UCHAR       *block_ptr;
     UCHAR       *temp_ptr;
@@ -118,9 +185,48 @@ UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *p
     *block_indirect_ptr  = block_ptr;
     block_ptr            = ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(pool_start);
     block_ptr            = ACE_OS_UCHAR_POINTER_ADD(block_ptr, (sizeof(UCHAR*)));
-    free_ptr             = ACE_OS_UCHAR_TO_AL
+    free_ptr             = ACE_OS_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(block_ptr);
+    *free_ptr            = ACE_OS_BYTE_BLOCK_FREE;
 
+    /* Clear the owner id. */
+    pool_ptr->ace_os_byte_pool_owner = ACE_OS_NULL;
 
+    /* Disable interrupts to place the byte pool on the created list. */
+    ACE_OS_DISABLE
+
+    /* Setup the byte pool ID to make it valid. */
+    // pool_ptr->ace_os_byte_pool_id = 
+
+    /* Place the byte pool on the list of created byte pools. Frist,
+        check for an empty list. */
+    if (ace_os_byte_pool_created_count == ACE_OS_EMPTY)
+    {
+        /* The created byte pool list is empty. Add byte pool to empty list. */
+        ace_os_byte_pool_created_ptr             = pool_ptr;
+        pool_ptr->ace_os_byte_block_created_next = pool_ptr;
+        pool_ptr->ace_os_byte_block_created_prev = pool_ptr;
+    }
+    else
+    {
+        /* This list is not NULL, add to the end of the list. */
+        next_pool = ace_os_byte_pool_created_ptr;
+        prev_pool = next_pool->ace_os_byte_block_created_prev;
+
+        /* Place the new byte pool in the list. */
+        next_pool->ace_os_byte_block_created_prev = pool_ptr;
+        prev_pool->ace_os_byte_block_created_next = pool_ptr;
+
+        /* Setup this byte pool's created links. */
+        pool_ptr->ace_os_byte_block_created_prev = prev_pool;
+        pool_ptr->ace_os_byte_block_created_next = next_pool;
+    }
+
+    /* Increment the number of created byte pools. */
+    ace_os_byte_pool_created_count ++;
+    
+    ACE_OS_RESTORE
+
+    return ACE_OS_SUCCESS;
 
 }
 
@@ -149,9 +255,98 @@ UINT ace_os_byte_pool_performance_system_info_get()
 
 }
 
-UINT ace_byte_pool_prioritize()
+UINT ace_os_byte_pool_prioritize()
 {
 
+}
+
+UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
+{
+    ACE_OS_INTERRUPT_SAVE_AREA
+
+    UCHAR           *current_ptr;
+    ULONG           total_theoretical_available;
+    UCHAR           **this_block_link_ptr;
+    ULONG           available_bytes;
+    UINT            examine_blocks;
+    UCHAR           *work_ptr;
+    UCHAR           *free_ptr;
+    UINT            first_free_block_found =  ACE_OS_FALSE;
+    ACE_OS_THREAD   *thread_ptr;
+
+    /* Disable interrupt. */
+    ACE_OS_DISABLE
+
+    /* First, determine if there are enough bytes in the pool. */
+    /* Theoretical bytes available = free bytes + ((framents-2) * overhead of each block) */
+    total_theoretical_available = pool_ptr->ace_os_byte_pool_available + 
+                            ((pool_ptr->ace_os_byte_pool_framents -2) * ((sizeof(UCHAR*)) + (sizeof(ALIGN_TYPE))));
+    if (memory_size >= total_theoretical_available)
+    {
+        /* Restore interrupt. */
+        ACE_OS_RESTORE
+
+        /* Not enough memory, return a NULL pointer. */
+        current_ptr = ACE_OS_NULL;
+    }
+    else
+    {
+        /* Pickup thread pointer. */
+        // ACE_OS_THREAD_GET_CURRENT(thread_ptr);
+
+        /* Setup ownership of the byte pool. */
+        pool_ptr->ace_os_byte_pool_owner = thread_ptr;
+
+        /* Walk through the memory pool in search for a large enough block. */
+        current_ptr = pool_ptr->ace_os_byte_pool_search;
+        examine_blocks = pool_ptr->ace_os_byte_pool_framents + ((UINT) 1);
+        available_bytes = ((ULONG) 0);
+        do
+        {
+            /* Check to see if this block is free. */
+            work_ptr = ACE_OS_UCHAR_POINTER_ADD(current_ptr, (sizeof(UCHAR*)));
+            free_ptr = ACE_OS_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(work_ptr);
+            if ((*free_ptr) == ACE_OS_BYTE_BLOCK_FREE)
+            {
+                /* Determine if this is the first free block. */
+                if (first_free_block_found == ACE_OS_FALSE)
+                {
+                    /* This is the first free block. */
+                    pool_ptr->ace_os_byte_pool_search = current_ptr;
+
+                    /* Set the flag to indicate we have found the first free
+                        block. */
+                    first_free_block_found = ACE_OS_TRUE;
+                }
+
+                /* Block is free, see if it is large enough. */
+
+                /* Pickup the next block's pointer */
+            }
+
+        } while (examine_blocks != ((ULONG) 0));
+        
+        /* Determine if a block was found. if so, determine if it needs to be 
+            split. */
+        if (available_bytes != ((ULONG) 0))
+        {
+            /* Determine if we need to split this block. */
+
+            
+        }
+        else
+        {
+            /* Restore interrupt. */
+            ACE_OS_RESTORE
+
+            /* Set current pointer to NULL to indicate nothing was found. */
+            current_ptr = ACE_OS_NULL;
+        }
+
+    }
+
+    /* Return the search pointer. */
+    return (current_ptr);
 }
 
 UINT ace_byte_release()

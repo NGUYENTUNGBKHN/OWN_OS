@@ -33,6 +33,8 @@ extern "C"
 #define ACE_OS_EMPTY                        ((ULONG)  0)
 #define ACE_OS_AUTO_START                   ((UINT)   1)
 #define ACE_OS_NULL                         ((ULONG)  0)
+#define ACE_OS_FALSE                        ((UINT)   0)
+#define ACE_OS_TRUE                         ((UINT)   1)
 #define ACE_OS_STACK_FILL                   ((ULONG)  0xEFEFEFEFUL)
 
 /* Thread execution state values.  */
