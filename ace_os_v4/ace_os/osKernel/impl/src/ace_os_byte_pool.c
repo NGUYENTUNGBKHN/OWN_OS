@@ -14,6 +14,7 @@
 ***************************************************************************************************************/
 #include "ace_os_api.h"
 #include "ace_os_byte_pool.h"
+#include "ace_os_thread.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
 ***************************************************************************************************************/
@@ -68,7 +69,7 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
     memory_size = (((memory_size + (sizeof(ALIGN_TYPE))) - ((ALIGN_TYPE) 1))/(sizeof(ALIGN_TYPE))) * (sizeof(ALIGN_TYPE));
 
     /* Pickup thread pointer. */
-    // ACE_OS_THREAD_GET_CURRENT(thread_ptr);
+    ACE_OS_THREAD_GET_CURRENT(thread_ptr);
 
     /* Disable interrupts. */
     ACE_OS_DISABLE
@@ -271,6 +272,7 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
     UINT            examine_blocks;
     UCHAR           *work_ptr;
     UCHAR           *free_ptr;
+    UCHAR           *next_ptr;
     UINT            first_free_block_found =  ACE_OS_FALSE;
     ACE_OS_THREAD   *thread_ptr;
 
@@ -322,6 +324,25 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
                 /* Block is free, see if it is large enough. */
 
                 /* Pickup the next block's pointer */
+                this_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(current_ptr);
+                next_ptr            = *this_block_link_ptr;
+
+                /* Calculate the number of bytes available in this block. */
+                available_bytes = ACE_OS_UCHAR_POINTER_DIF(next_ptr, current_ptr);
+                available_bytes = available_bytes - ((sizeof(UCHAR*)) + (sizeof(ALIGN_TYPE)));
+
+                /* If this is large enough, we are done because our first-fit algorithm
+                    has been satisfied! */
+                if (available_bytes >= memory_size)
+                {
+                    /* Get out of the search loop! */
+                    break;
+                }
+                else
+                {
+                    /* Clear the available bytes variable. */
+                    
+                }
             }
 
         } while (examine_blocks != ((ULONG) 0));

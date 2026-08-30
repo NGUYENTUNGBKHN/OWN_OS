@@ -40,12 +40,10 @@
 /* Locate block pool component data in this file.  */
 
 /* Define the head pointer of the created block pool list.  */
-
 ACE_OS_BLOCK_POOL *  ace_os_block_pool_created_ptr;
 
 
 /* Define the variable that holds the number of created block pools. */
-
 ULONG            ace_os_block_pool_created_count;
 
 /***************************************************************************************************************

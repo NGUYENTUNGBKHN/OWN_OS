@@ -16,6 +16,15 @@ extern "C"
 {
 #endif
 
+
+/* Define the macro to get the current thread pointer. This is particularly useful in SMP
+   versions of ThreadX to add additional processing.  The default implementation is to simply
+   access the global current thread pointer directly.  */
+
+#ifndef ACE_OS_THREAD_GET_CURRENT
+#define ACE_OS_THREAD_GET_CURRENT(a)            (a) =  ace_os_thread_current_ptr;
+#endif
+
 UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr, 
                           CHAR *name_ptr,
                           VOID (*entry_function)(ULONG id),
@@ -55,6 +64,18 @@ VOID ace_os_thread_timeout(void);
 UINT ace_os_thread_wait_abort(void);
 
 #define ACE_OS_DECLARE  extern
+
+/* Define the pointer that contains the system stack pointer. This is
+   utilized when control returns form a thread to the system to reset the
+   current stack. This is setup in the low-level initialization function. */
+
+ACE_OS_DECLARE VOID*    ace_os_thread_system_stack_ptr;
+
+/* Define the current thread pointe. This variable points to the currently
+   executing thread. If this variable is NULL, no-thread is executing. */
+
+ACE_OS_DECLARE ACE_OS_THREAD*    ace_os_thread_current_ptr;
+
 
 /* Define the head pointer of the created thread list.  */
 
