@@ -155,8 +155,8 @@ typedef struct ACE_OS_BYTE_POOL_STRUCT
    /* Define the number of available bytes in the pool. */
    ULONG       *ace_os_byte_pool_available;
 
-   /* Define the number of framents in the pool. */
-   UINT        ace_os_byte_pool_framents;
+   /* Define the number of fragments in the pool. */
+   UINT        ace_os_byte_pool_fragments;
 
    /* Define the head pointer of byte pool. */
    UCHAR       *ace_os_byte_pool_list;

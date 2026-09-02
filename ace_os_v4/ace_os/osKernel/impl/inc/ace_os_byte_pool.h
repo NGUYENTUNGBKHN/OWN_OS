@@ -22,6 +22,14 @@ extern "C"
 #define ACE_OS_BYTE_BLOCK_FREE                      ((ULONG) 0xFFFFEEEEUL)
 #endif
 
+#ifndef ACE_OS_BYTE_BLOCK_MIN
+#define ACE_OS_BYTE_BLOCK_MIN                       ((ULONG) 20)
+#endif
+
+#ifndef ACE_OS_BYTE_POOL_MIN
+#define ACE_OS_BYTE_POOL_MIN                        ((ULONG) 100)
+#endif 
+
 #ifdef __cplusplus
 }
 #endif

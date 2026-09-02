@@ -110,10 +110,37 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
 
     }while(!finish);
     
+    /* Copy the pointer into the return destination. */
+    *memory_ptr = (VOID *) work_ptr;
 
+    /* Determine if memory was found. */
+    if (work_ptr != ACE_OS_NULL)
+    {
 
+        /* Restore interrupts. */
+        ACE_OS_RESTORE
 
-    ACE_OS_RESTORE
+        /* Set the status to success. */
+        status = ACE_OS_SUCCESS;
+    }
+    else
+    {
+        /* No memory of sufficient suze was found .. */
+
+        /* Determine if the request specifies suspension. */
+        if (wait_option != ACE_OS_NO_WAIT)
+        {
+
+        }
+        else
+        {
+            /* Restore interrupts. */
+            ACE_OS_RESTORE
+
+            /* Set the status to success. */
+            status = ACE_OS_NO_MEMORY;
+        }
+    }
 
     return status;
 }
@@ -158,7 +185,7 @@ UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *p
         of the pool that is there just for the algorithm. Be sure to count
         the available block's header in the available bytes count. */
     pool_ptr->ace_os_byte_pool_available = pool_size - ((sizeof(VOID * )) + (sizeof(ALIGN_TYPE)));
-    pool_ptr->ace_os_byte_pool_framents = ((UINT) 2);
+    pool_ptr->ace_os_byte_pool_fragments = ((UINT) 2);
 
     /* Each block contains a "next" pointer that points to the next block in the pool followed by a ALIGN_TYPE
         field that contains either the constant ACE_BYTE_BLOCK_FREE (if the block is free) or a pointer to the
@@ -273,6 +300,7 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
     UCHAR           *work_ptr;
     UCHAR           *free_ptr;
     UCHAR           *next_ptr;
+    UCHAR           *next_block_link_ptr;
     UINT            first_free_block_found =  ACE_OS_FALSE;
     ACE_OS_THREAD   *thread_ptr;
 
@@ -280,9 +308,9 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
     ACE_OS_DISABLE
 
     /* First, determine if there are enough bytes in the pool. */
-    /* Theoretical bytes available = free bytes + ((framents-2) * overhead of each block) */
+    /* Theoretical bytes available = free bytes + ((fragments-2) * overhead of each block) */
     total_theoretical_available = pool_ptr->ace_os_byte_pool_available + 
-                            ((pool_ptr->ace_os_byte_pool_framents -2) * ((sizeof(UCHAR*)) + (sizeof(ALIGN_TYPE))));
+                            ((pool_ptr->ace_os_byte_pool_fragments -2) * ((sizeof(UCHAR*)) + (sizeof(ALIGN_TYPE))));
     if (memory_size >= total_theoretical_available)
     {
         /* Restore interrupt. */
@@ -294,14 +322,14 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
     else
     {
         /* Pickup thread pointer. */
-        // ACE_OS_THREAD_GET_CURRENT(thread_ptr);
+        ACE_OS_THREAD_GET_CURRENT(thread_ptr);
 
         /* Setup ownership of the byte pool. */
         pool_ptr->ace_os_byte_pool_owner = thread_ptr;
 
         /* Walk through the memory pool in search for a large enough block. */
         current_ptr = pool_ptr->ace_os_byte_pool_search;
-        examine_blocks = pool_ptr->ace_os_byte_pool_framents + ((UINT) 1);
+        examine_blocks = pool_ptr->ace_os_byte_pool_fragments + ((UINT) 1);
         available_bytes = ((ULONG) 0);
         do
         {
@@ -341,8 +369,75 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
                 else
                 {
                     /* Clear the available bytes variable. */
-                    
+                    available_bytes = ((ULONG) 0);
+
+                    /* Not enough memory, check to see if the neighbor is
+                        free and can be merged. */
+                    work_ptr = ACE_OS_UCHAR_POINTER_ADD(next_ptr, (sizeof(UCHAR*)));
+                    free_ptr = ACE_OS_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(work_ptr);
+                    if ((*free_ptr) == ACE_OS_BYTE_BLOCK_FREE)
+                    {
+                        /* Yse, neighbor block can be merged! This is quickly acccomplished
+                            by updating the current block with the nexCalt blocks pointer. */
+                        next_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(next_ptr);
+                        *this_block_link_ptr = *next_block_link_ptr;
+
+                        /* Reduce the fragment total. We don't need to increase the bytes
+                            available because all free headers are also included in the available 
+                            count. */
+                        pool_ptr->ace_os_byte_pool_fragments;
+
+                        /* See if the search pointer is affected. */
+                        if (pool_ptr->ace_os_byte_pool_search)
+                        {
+                            /* Update the search pointer. */
+                            pool_ptr->ace_os_byte_pool_search = current_ptr;
+                        }
+                    }
+                    else
+                    {
+                        /* Neighbor is not free so we can skip over it! */
+                        next_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(next_ptr);
+                        current_ptr = *next_block_link_ptr;
+
+                        /* Decrement the examined block count to account for this one. */
+                        if (examine_blocks != ((UINT) 0))
+                        {
+                            examine_blocks--;
+                        }
+                    }
                 }
+            }
+            else
+            {
+                /* Block is not free, move to next block. */
+                this_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(current_ptr);
+                current_ptr = *this_block_link_ptr;
+
+            }
+
+            /*  Another block has been searched ... decrement counter. */
+            if (examine_blocks != ((UINT) 0))
+            {
+                examine_blocks --;
+            }
+
+            /* Restore interrupt temporarily. */
+            ACE_OS_RESTORE
+
+            /* Disable interrupt. */
+            ACE_OS_DISABLE
+
+            /* Determine if anything has changed in terms of pool ownership. */
+            if (pool_ptr->ace_os_byte_pool_owner != thread_ptr)
+            {
+                /* Pool changed onwership in the brief period interrup were
+                    enabled. Reset the search. */
+                current_ptr = pool_ptr->ace_os_byte_pool_search;
+                examine_blocks = pool_ptr->ace_os_byte_pool_fragments + ((UINT) 1);
+
+                /* Setup our ownership again. */
+                pool_ptr->ace_os_byte_pool_owner = thread_ptr;
             }
 
         } while (examine_blocks != ((ULONG) 0));
@@ -352,8 +447,23 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
         if (available_bytes != ((ULONG) 0))
         {
             /* Determine if we need to split this block. */
+            if ((available_bytes - memory_size) >= ((ULONG) ACE_OS_BYTE_BLOCK_MIN))
+            {
+                /* Split the block. */
+                next_ptr = ACE_OS_UCHAR_POINTER_ADD(current_ptr, (memory_size + ((sizeof(UCHAR*)) * (sizeof(ALIGN_TYPE)))));
 
-            
+                /* Setup the new free block. */
+                next_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(next_ptr);
+                this_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(current_ptr);
+                *next_block_link_ptr = *this_block_link_ptr;       
+
+            }
+
+            /* Restore interrupts. */
+            ACE_OS_RESTORE
+
+            /* Adjust the pointer for the application. */
+            current_ptr = ACE_OS_UCHAR_POINTER_ADD(current_ptr, (((sizeof(UCHAR*)) + (sizeof(ALIGN_TYPE)))));
         }
         else
         {
