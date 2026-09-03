@@ -125,7 +125,7 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
     }
     else
     {
-        /* No memory of sufficient suze was found .. */
+        /* No memory of sufficient size was found .. */
 
         /* Determine if the request specifies suspension. */
         if (wait_option != ACE_OS_NO_WAIT)

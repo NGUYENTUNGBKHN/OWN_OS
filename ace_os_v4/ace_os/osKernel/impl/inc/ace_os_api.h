@@ -225,6 +225,64 @@ typedef struct ACE_OS_THREAD_STRUCT
 
 }ACE_OS_THREAD;
 
+
+/* Kernel Enter Function */
+#define ace_os_kernel_enter         ace_os_initialize_kernel_enter
+
+
+/*
+************************************************************************************************************************
+************************************************************************************************************************
+*                           A C E - O S   E X T E R N A L   F U N C T I O N
+************************************************************************************************************************
+************************************************************************************************************************
+*/
+
+/* Declare the ace_os_application_define function as having C linkage. */
+
+VOID ace_os_application_define(VOID *first_unused_memory);
+
+/* Define the function prototypes of the ThreadX API. */
+
+/* Define block memory pool management function prototypes. */
+
+UINT ace_os_block_pool_create(ACE_OS_BLOCK_POOL *pool_ptr, CHAR *name_ptr, ULONG block_size,
+                            VOID *pool_start, ULONG pool_size);
+
+
+/* Define byte memory pool management function prototypes. */
+
+UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG memory_size,
+                         ULONG wait_option);
+UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *pool_start, 
+                        ULONG pool_size);
+
+
+/* Define event flags management function prototypes. */
+
+
+/* Define initialization function prototyes. */
+
+VOID ace_os_initialize_kernel_enter(VOID);
+
+
+/* Define mutex management function prototypes. */
+
+
+/* Define queue management function prototypes. */
+
+
+/* Define semaphore management function prototypes. */
+
+
+/* Define thread control function prototypes. */
+
+
+/* Define timer management function prototypes. */
+
+
+/*  */
+
 /*
 ************************************************************************************************************************
 ************************************************************************************************************************
@@ -252,24 +310,7 @@ typedef struct ACE_OS_THREAD_STRUCT
 #define ACE_OS_VOID_TO_BYTE_POOL_POINTER_CONVERT(temp)         ((ACE_OS_BYTE_POOL *) ((VOID *) (temp)))
 #define ACE_OS_BYTE_POOL_TO_UCHAR_POINTER_CONVERT(temp)        ((UCHAR *) ((VOID *) (temp)))
 #define ACE_OS_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(temp)       ((ALIGN_TYPE *) ((VOID *) (temp)))
-/*
-************************************************************************************************************************
-************************************************************************************************************************
-*                           A C E - O S   E X T E R N A L   F U N C T I O N
-************************************************************************************************************************
-************************************************************************************************************************
-*/
 
-/* Declare the ace_os_application_define function as having C linkage. */
-
-VOID ace_os_application_define(VOID *first_unused_memory);
-
-/* Define the function prototypes of the ThreadX API. */
-
-/* Define block memory pool management function prototypes. */
-
-UINT ace_os_block_pool_create(ACE_OS_BLOCK_POOL *pool_ptr, CHAR *name_ptr, ULONG block_size,
-                            VOID *pool_start, ULONG pool_size);
 
 #ifdef __cplusplus
 }
