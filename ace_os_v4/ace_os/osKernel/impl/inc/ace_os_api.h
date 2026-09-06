@@ -133,7 +133,7 @@ typedef struct ACE_OS_BLOCK_POOL_STRUCT
     UINT            ace_os_block_pool_block_size;
 
     struct ACE_OS_BLOCK_POOL_STRUCT
-                    ace_os_block_pool_suspension_list;
+                    *ace_os_block_pool_suspension_list;
     UINT            ace_os_block_pool_suspension_cnt;
 
     /* Define the created list next and previous pointer. */
@@ -310,6 +310,11 @@ VOID ace_os_initialize_kernel_enter(VOID);
 #define ACE_OS_VOID_TO_BYTE_POOL_POINTER_CONVERT(temp)         ((ACE_OS_BYTE_POOL *) ((VOID *) (temp)))
 #define ACE_OS_BYTE_POOL_TO_UCHAR_POINTER_CONVERT(temp)        ((UCHAR *) ((VOID *) (temp)))
 #define ACE_OS_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(temp)       ((ALIGN_TYPE *) ((VOID *) (temp)))
+
+
+#ifndef ACE_OS_THREAD_GET_SYSTEM_STATE
+#define ACE_OS_THREAD_GET_SYSTEM_STATE()           ace_os_thread_system_state
+#endif
 
 
 #ifdef __cplusplus

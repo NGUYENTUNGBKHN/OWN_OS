@@ -30,6 +30,16 @@ VOID        ace_os_initialize_high_level(VOID);
 VOID        ace_os_initialize_kernel_setup(VOID);
 VOID        ace_os_initialize_low_level(VOID);
 
+#define INITIALIZE_DECLARE  extern
+
+/* Define the unused memory pointer. The value of the first available
+    memory address is placed in this variable in the low-level
+    initialization function. The content of this variable is passed
+    to the application's system dfinition function. */
+
+INITIALIZE_DECLARE  VOID    *ace_os_initialize_unused_memory;
+
+
 #ifdef __cplusplus
 }
 #endif

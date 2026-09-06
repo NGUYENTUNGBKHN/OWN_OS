@@ -14,6 +14,7 @@
 ***************************************************************************************************************/
 #include "ace_os_api.h"
 #include "ace_os_thread.h"
+#include "ace_os_initialize.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
 ***************************************************************************************************************/
@@ -38,6 +39,9 @@
 **                                        INTERNAL VARIABLE DEFINITIONS
 ***************************************************************************************************************/
 
+/* Define the current thread pointer. This variable points to the currently
+    executing thread. If this variable is NULL, no thread is executing. */
+ACE_OS_THREAD  *ace_os_thread_current_ptr;
 
 /***************************************************************************************************************
 **                                         INTERNAL FUNCTION PROTOTYPES
@@ -137,18 +141,31 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
     /* Increment the thread created count.  */
     ace_os_thread_created_count++;
 
+    /* Determine if an automatic start was requested. If so, call the resume
+       thread function and then check for a preemption condition. */ 
     if (auto_start == ACE_OS_AUTO_START)
     {
+        if (ACE_OS_THREAD_GET_SYSTEM_STATE() >= ACE_OS_INITIALIZE_IN_PROGRESS)
+        {
+
+        }
+
         /* Restore interrupt */
         ACE_OS_RESTORE
+
+        /* Call the resume thread function to make this thread ready. */
+        ace_os_thread_system_resume(thread_ptr);
     }
     else
     {
         /* Restore interrupt */
+        ACE_OS_RESTORE
 
         /* Perform any additional activities for tool or user purpose. */
 
+
         /* Disable interrupt */
+        ACE_OS_DISABLE
 
         /* Re-enable preemption. */
 
@@ -257,8 +274,14 @@ VOID ace_os_thread_system_preempt_check(void)
 
 }
 
-VOID ace_os_thread_system_resume(void)
+VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
 {
+    ACE_OS_INTERRUPT_SAVE_AREA
+
+    /* Lockout interrupt while the thread is being resumed. */
+    ACE_OS_DISABLE
+
+    /* Decrease the preempt disabled count. */
 
 }
 

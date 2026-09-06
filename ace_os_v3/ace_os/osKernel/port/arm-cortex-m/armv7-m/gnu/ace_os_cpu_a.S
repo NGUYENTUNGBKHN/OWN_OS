@@ -35,6 +35,8 @@
     .thumb
     .syntax unified
 
+// VOID ace_os_start_rdy(VOID)
+// {
 .thumb_func
 ace_os_start_rdy:
     CPSID   I
@@ -77,7 +79,7 @@ ace_os_start_rdy:
     LDMFD    SP!, {R1, R2}                @ Load PC and discard xPSR
     CPSIE   I
     BX       R1
-
+// }
 
 .thumb_func
 ace_os_ctxSw:

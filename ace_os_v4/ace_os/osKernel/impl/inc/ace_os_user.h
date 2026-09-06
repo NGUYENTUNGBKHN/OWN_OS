@@ -1,26 +1,24 @@
 /*
 ****************************************************************************************************************
- * @file       ace_os_time.h
+ * @file       ace_os_user.h
  * @brief      
- * @date       2026/08/09
+ * @date       2026/09/05
  * @author     [Gentantun] (nguyenthanhtung8196@gmail.com)
  * @details    
  * @ref        
  * @copyright  Copyright (c) 2026 RoboTun
 ****************************************************************************************************************
 */
-#ifndef _ACE_OS_TIME_H_
-#define _ACE_OS_TIME_H_
+
+#ifndef _ACE_OS_USER_H_
+#define _ACE_OS_USER_H_
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 /* CODE */
-/* Define the current tinme slice value. If non-zero, a time-slice is active
-    otherwise, the time_slice is not active. */
 
-#define TIMER_DECLARE ULONG     ace_os_timer_time_slice;
 
 #ifdef __cplusplus
 }

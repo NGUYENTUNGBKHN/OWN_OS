@@ -38,6 +38,11 @@
 **                                        INTERNAL VARIABLE DEFINITIONS
 ***************************************************************************************************************/
 
+/* Define the current tinme slice value. If non-zero, a time-slice is active
+    otherwise, the time_slice is not active. */
+    
+ULONG       ace_os_timer_time_slice;
+
 
 /***************************************************************************************************************
 **                                         INTERNAL FUNCTION PROTOTYPES

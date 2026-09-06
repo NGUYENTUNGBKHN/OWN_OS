@@ -25,6 +25,15 @@ extern "C"
 #define ACE_OS_THREAD_GET_CURRENT(a)            (a) =  ace_os_thread_current_ptr;
 #endif
 
+/* Define the macro to set the current thread pointer. This is particularly useful in SMP
+   versions of ThreadX to add additional processing.  The default implementation is to simply
+   access the global current thread pointer directly.  */
+
+#ifndef ACE_OS_THREAD_SET_CURRENT
+#define ACE_OS_THREAD_SET_CURRENT(a)            ace_os_thread_current_ptr = (a);
+#endif 
+
+
 UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr, 
                           CHAR *name_ptr,
                           VOID (*entry_function)(ULONG id),

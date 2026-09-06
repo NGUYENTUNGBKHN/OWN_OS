@@ -1,5 +1,9 @@
 
 
+#ifdef ACE_OS_INCLUDE_USER_DEFINE_FILE
+#include "ace_os_user.h"
+#endif
+
     .text
     .align 4
     .syntax unified
@@ -10,7 +14,29 @@
     .thumb_func
 ace_os_thread_stack_build:
 
-    /* Stack Bottom : (higher memory address) */
+    /* Build a fake interrupt frame. The form of the fake interrupt stack
+        on the Cortex-M should look like the following after it is built:
+
+        Stack top:
+                    LR          Interrupt LR (LR at tiem of PENDSV)
+                    r4          Initial value for r4
+                    r5          Initial value for r5
+                    r6          Initial value for r6
+                    r7          Initial value for r7
+                    r8          Initial value for r8
+                    r9          Initial value for r9
+                    r10         Initial value for r10
+                    r11         Initial value for r11
+                    r0          Initial value for r0    (Hardware stack starts here!!)
+                    r1          Initial value for r1
+                    r2          Initial value for r2
+                    r3          Initial value for r3
+                    r12         Initial value for r12
+                    lr          Initial value for lr
+                    pc          Initial value for pc
+                    xPSR        Initial value for xPSR
+
+    Stack Bottom : (higher memory address) */
 
     LDR     r2, [r0, #16]       // pickup end of stack area (ace_os_thread_stack_end)
     BIC     r2, r2, #0x07       // Align frame for 8-byte aligment
