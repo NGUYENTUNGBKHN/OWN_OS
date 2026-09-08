@@ -72,27 +72,27 @@ VOID ace_os_thread_time_slice(void);
 VOID ace_os_thread_timeout(void);
 UINT ace_os_thread_wait_abort(void);
 
-#define ACE_OS_DECLARE  extern
+#define THREAD_DECLARE  extern
 
 /* Define the pointer that contains the system stack pointer. This is
    utilized when control returns form a thread to the system to reset the
    current stack. This is setup in the low-level initialization function. */
 
-ACE_OS_DECLARE VOID*    ace_os_thread_system_stack_ptr;
+THREAD_DECLARE VOID*    ace_os_thread_system_stack_ptr;
 
 /* Define the current thread pointe. This variable points to the currently
    executing thread. If this variable is NULL, no-thread is executing. */
 
-ACE_OS_DECLARE ACE_OS_THREAD*    ace_os_thread_current_ptr;
+THREAD_DECLARE ACE_OS_THREAD*    ace_os_thread_current_ptr;
 
 
 /* Define the head pointer of the created thread list.  */
 
-ACE_OS_DECLARE ACE_OS_THREAD * ace_os_thread_created_ptr;
+THREAD_DECLARE ACE_OS_THREAD * ace_os_thread_created_ptr;
 
 /* Define the variable that holds the number of created threads. */
 
-ACE_OS_DECLARE ULONG ace_os_thread_created_count;
+THREAD_DECLARE ULONG ace_os_thread_created_count;
 
 
 /* Define the current state variable.  When this value is 0, a thread
@@ -101,7 +101,14 @@ ACE_OS_DECLARE ULONG ace_os_thread_created_count;
    initialized to ACE_OS_INITIALIZE_IN_PROGRESS to indicate initialization is
    active.  */
 
-ACE_OS_DECLARE volatile ULONG  ace_os_thread_system_state;
+THREAD_DECLARE volatile ULONG  ace_os_thread_system_state;
+
+/* Define the array of thread pointers.  Each entry represents the threads that
+   are ready at that priority group.  For example, index 10 in this array
+   represents the first thread ready at priority 10.  If this entry is NULL,
+   no threads are ready at that priority.  */
+
+THREAD_DECLARE ACE_OS_THREAD *ace_os_thread_priority_list[ACE_OS_MAX_PRIORITIES];
 
 #ifdef __cplusplus
 }

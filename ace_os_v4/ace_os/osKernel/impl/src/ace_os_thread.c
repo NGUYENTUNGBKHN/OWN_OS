@@ -39,6 +39,8 @@
 **                                        INTERNAL VARIABLE DEFINITIONS
 ***************************************************************************************************************/
 
+ACE_OS_THREAD   *ace_os_thread_priority_list[ACE_OS_MAX_PRIORITIES];
+
 /* Define the current thread pointer. This variable points to the currently
     executing thread. If this variable is NULL, no thread is executing. */
 ACE_OS_THREAD  *ace_os_thread_current_ptr;
@@ -276,12 +278,55 @@ VOID ace_os_thread_system_preempt_check(void)
 
 VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
 {
+    UINT priority;
+    ACE_OS_THREAD   *head_ptr;
+    ACE_OS_THREAD   *tail_prt;
+
     ACE_OS_INTERRUPT_SAVE_AREA
 
     /* Lockout interrupt while the thread is being resumed. */
     ACE_OS_DISABLE
 
     /* Decrease the preempt disabled count. */
+
+    /* Determine if the thread is in the process of suspending. If so, the thread
+        control block is already on the linked list so nothing needs to be done. */
+    
+
+    /* Thread is not in the process of suspending. Now check to make sure the thread
+        has not already been resumed. */
+    if (thread_ptr->ace_os_thread_state != ACE_OS_READY)
+    {
+        /* No, now check to see if the delayed suspension flag is set. */
+        
+        /* Resume the thread! */
+
+        /* Make this thread ready. */
+
+        /* Change state to ready. */
+        thread_ptr->ace_os_thread_state = ACE_OS_READY;
+
+        /* Pickup priority of thread. */
+        priority = thread_ptr->ace_os_thread_priority;
+
+        /* Thread state change. */
+
+        /* Determine if there are other threads at this priority that are
+            ready. */
+        head_ptr = ace_os_thread_priority_list[priority];
+        if (head_ptr == ACE_OS_NULL)
+        {
+
+        }
+        else
+        {
+            /* No, there are other threads at this priority already ready. */
+
+            /* Just add this thread to the priority list. */
+            
+
+        }
+    }
 
 }
 

@@ -37,6 +37,13 @@ typedef unsigned short              USHORT;
 #define ALIGN_TYPE                  ULONG
 
 
+/* Define the priority levels for ThreadX. Legal values range
+    from 32 to 1024 and MUST be evenly divisiable by 32. */
+#ifndef ACE_OS_MAX_PRIORITIES
+#define ACE_OS_MAX_PRIORITIES   32
+#endif 
+
+
 /* Define the interrupt disable/restore macros for each compiler. */
 
 #if defined(__GNUC__) || defined(__ICCARM__)

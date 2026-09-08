@@ -204,6 +204,8 @@ typedef struct ACE_OS_THREAD_STRUCT
     VOID        *ace_os_thread_stack_start;             /* ACE_OS's stack start address     */
     VOID        *ace_os_thread_stack_end;               /* ACE_OS's stack end address       */
     ULONG       ace_os_thread_stack_size;
+    ULONG       ace_os_thread_time_slice;                /* Current time-slice */
+    ULONG       ace_os_thread_new_time_slice;            /* New time-slice */
 
     /* Define pointers to the next and previous ready threads.  */
     struct ACE_OS_THREAD_STRUCT
