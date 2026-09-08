@@ -316,7 +316,15 @@ VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
         head_ptr = ace_os_thread_priority_list[priority];
         if (head_ptr == ACE_OS_NULL)
         {
+            /* First thread at thí priority ready. Add to the front of the list */
+            ace_os_thread_priority_list[priority]       = thread_ptr;
+            thread_ptr->ace_os_thread_ready_next        = thread_ptr;
+            thread_ptr->ace_os_thread_ready_previous    = thread_ptr;
 
+            /* Max priorities > 32 */
+
+            /* Or in the thread's priority bit. */
+            
         }
         else
         {

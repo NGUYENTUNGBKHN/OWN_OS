@@ -17,6 +17,12 @@ extern "C"
 #endif
 
 
+/* Define the MOD32 bit set macro that is used to set/clear a priority bit within a specific
+   priority group. */
+#ifndef ACE_OS_MOD32_BIT_SET
+#define ACE_OS_MOD32_BIT_SET(a,b)      (b) = (((ULONG) 1) << ((a)));
+#endif
+
 /* Define the macro to get the current thread pointer. This is particularly useful in SMP
    versions of ThreadX to add additional processing.  The default implementation is to simply
    access the global current thread pointer directly.  */
