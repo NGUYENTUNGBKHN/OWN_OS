@@ -69,7 +69,7 @@ UINT ace_os_block_allocate(ACE_OS_BLOCK_POOL *pool_ptr, VOID **block_ptr, ULONG 
 {
     ACE_OS_INTERRUPT_SAVE_AREA
 
-    UINT    status;
+    UINT    status = ACE_OS_SUCCESS;
     UCHAR   *work_ptr;
     UCHAR   *temp_ptr;
     UCHAR   **return_ptr;
@@ -111,7 +111,7 @@ UINT ace_os_block_allocate(ACE_OS_BLOCK_POOL *pool_ptr, VOID **block_ptr, ULONG 
 
         if (wait_option != ACE_OS_NO_WAIT)
         {
-
+            status = ACE_OS_SUCCESS;
         }
         else
         {
@@ -263,12 +263,12 @@ UINT ace_os_block_pool_create(ACE_OS_BLOCK_POOL *pool_ptr, CHAR *name_ptr, ULONG
 
 UINT ace_os_block_pool_delete()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_block_pool_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_block_pool_initialize(VOID)
@@ -278,17 +278,17 @@ VOID ace_os_block_pool_initialize(VOID)
 
 UINT ace_os_block_pool_performance_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_block_pool_performance_system_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_block_pool_prioritize()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_block_release(VOID *block_ptr)
@@ -298,7 +298,7 @@ UINT ace_block_release(VOID *block_ptr)
     ACE_OS_BLOCK_POOL   *pool_ptr;
     ACE_OS_THREAD       *thread_ptr;
     UCHAR               *work_ptr;
-    UCHAR               *return_block_ptr;
+    // UCHAR               *return_block_ptr;
     UCHAR               **next_block_ptr;
 
     /* Disable interrupts to put this block back in the pool.  */

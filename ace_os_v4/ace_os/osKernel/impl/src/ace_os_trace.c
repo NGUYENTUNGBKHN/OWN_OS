@@ -12,7 +12,7 @@
 /***************************************************************************************************************
 **                                                   INCLUDES
 ***************************************************************************************************************/
-#include "ace_os_port.h"
+#include "ace_os_api.h"
 #include "ace_os_trace.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
@@ -50,27 +50,27 @@
 
 UINT ace_os_trace_buffer_full_notify()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_trace_disable(VOID)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_trace_enable()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_trace_event_filter()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_trace_event_unfilter()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_trace_initialize()
@@ -80,7 +80,7 @@ VOID ace_os_trace_initialize()
 
 UINT ace_os_trace_interrupt_control()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_trace_isr_enter_insert()
@@ -105,7 +105,8 @@ VOID ace_os_trace_object_unregister()
 
 UINT ace_os_trace_user_event_insert()
 {
-
+    
+    return ACE_OS_SUCCESS;
 }
 
 /***************************************************************************************************************

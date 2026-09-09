@@ -12,7 +12,7 @@
 /***************************************************************************************************************
 **                                                   INCLUDES
 ***************************************************************************************************************/
-#include "ace_os_port.h"
+#include "ace_os_api.h"
 #include "ace_os_queue.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
@@ -55,27 +55,27 @@ VOID ace_os_queue_cleanup()
 
 UINT ace_os_queue_create()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_queue_delete()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_queue_flush()
 {
-
-}
+    return ACE_OS_SUCCESS;
+}   
 
 UINT ace_os_mutex_front_send()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_mutex_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_queue_initilaize(VOID)
@@ -84,33 +84,33 @@ VOID ace_os_queue_initilaize(VOID)
 }
 
 UINT ace_os_queue_performance_info_get()
-{
-
+{   
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_queue_performance_system_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_queue_prioritize()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_queue_receive()
 {
-    
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_queue_send_notify()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_queue_send()
 {
-    
+    return ACE_OS_SUCCESS;
 }
 
 /***************************************************************************************************************

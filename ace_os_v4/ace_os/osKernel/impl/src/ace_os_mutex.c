@@ -12,7 +12,7 @@
 /***************************************************************************************************************
 **                                                   INCLUDES
 ***************************************************************************************************************/
-#include "ace_os_port.h"
+#include "ace_os_api.h"
 #include "ace_os_mutex.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
@@ -55,22 +55,22 @@ VOID ace_os_mutex_cleanup()
 
 UINT ace_os_mutex_create()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_mutex_delete()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_mutex_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_mutex_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_mutex_initilaize(VOID)
@@ -80,17 +80,17 @@ VOID ace_os_mutex_initilaize(VOID)
 
 UINT ace_os_mutex_performance_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_mutex_performance_system_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_mutex_prioritize()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_mutex_priority_change()
@@ -100,7 +100,7 @@ VOID ace_os_mutex_priority_change()
 
 UINT ace_os_mutex_put()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 /***************************************************************************************************************

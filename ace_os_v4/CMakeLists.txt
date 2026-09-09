@@ -48,7 +48,7 @@ function(add_ace_lab LAB_NAME)
         "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/cpu/cortex-m7/gnu"
         "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/osKernel/config"
         "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/osKernel/impl/inc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/osKernel/port/cortex-m7/gnu"
+        "${CMAKE_CURRENT_SOURCE_DIR}/ace_os/osKernel/ports/cortex-m7/gnu"
     )
     target_compile_options(${LAB_NAME}.elf PRIVATE ${COMMON_COMPILE_OPTIONS})
     target_link_options(${LAB_NAME}.elf PRIVATE

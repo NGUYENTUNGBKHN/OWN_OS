@@ -58,11 +58,11 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
 {
     ACE_OS_INTERRUPT_SAVE_AREA
 
-    UINT status;
+    UINT status = ACE_OS_SUCCESS;
     UINT finish;
-    ACE_OS_BYTE_POOL *work_ptr;
+    UCHAR           *work_ptr;
 
-    ACE_OS_THREAD *thread_ptr;
+    ACE_OS_THREAD   *thread_ptr;
 
     /* Round the memory sizer up to the next size that is ewnely divisible by
     an ALIGN_TYPE (this is typically a 32-bit ULONG). This guarantees proper alignment. */
@@ -260,12 +260,12 @@ UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *p
 
 UINT ace_os_byte_pool_delete()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_byte_pool_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_byte_pool_initialize(VOID)
@@ -275,17 +275,17 @@ VOID ace_os_byte_pool_initialize(VOID)
 
 UINT ace_os_byte_pool_performance_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_byte_pool_performance_system_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_byte_pool_prioritize()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
@@ -298,9 +298,9 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
     ULONG           available_bytes;
     UINT            examine_blocks;
     UCHAR           *work_ptr;
-    UCHAR           *free_ptr;
+    ALIGN_TYPE      *free_ptr;
     UCHAR           *next_ptr;
-    UCHAR           *next_block_link_ptr;
+    UCHAR           **next_block_link_ptr;
     UINT            first_free_block_found =  ACE_OS_FALSE;
     ACE_OS_THREAD   *thread_ptr;
 
@@ -385,7 +385,7 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
                         /* Reduce the fragment total. We don't need to increase the bytes
                             available because all free headers are also included in the available 
                             count. */
-                        pool_ptr->ace_os_byte_pool_fragments;
+                        pool_ptr->ace_os_byte_pool_fragments--;
 
                         /* See if the search pointer is affected. */
                         if (pool_ptr->ace_os_byte_pool_search)
@@ -482,7 +482,7 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
 
 UINT ace_byte_release()
 {
-    
+    return ACE_OS_SUCCESS;
 }
 
 

@@ -78,7 +78,7 @@ __attribute__( ( always_inline ) ) static inline void __restore_interrupt(unsign
     __set_basepri_value(int_posture);
     __asm__ volatile ("" : : : "memory");
 #else
-    __asm__ volatile ("MRS  PRIMASK,%0": : "r" (int_posture): "memory");
+    __asm__ volatile ("MSR  PRIMASK,%0": : "r" (int_posture): "memory");
 #endif 
 }
 

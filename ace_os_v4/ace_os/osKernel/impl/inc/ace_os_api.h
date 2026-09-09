@@ -32,7 +32,7 @@ extern "C"
 #define ACE_OS_NO_WAIT                      ((ULONG)  0)
 #define ACE_OS_EMPTY                        ((ULONG)  0)
 #define ACE_OS_AUTO_START                   ((UINT)   1)
-#define ACE_OS_NULL                         ((ULONG)  0)
+#define ACE_OS_NULL                         ((void*)  0)
 #define ACE_OS_FALSE                        ((UINT)   0)
 #define ACE_OS_TRUE                         ((UINT)   1)
 #define ACE_OS_STACK_FILL                   ((ULONG)  0xEFEFEFEFUL)
@@ -132,7 +132,7 @@ typedef struct ACE_OS_BLOCK_POOL_STRUCT
     /* Save the individual memory block size - rounded for alignment. */
     UINT            ace_os_block_pool_block_size;
 
-    struct ACE_OS_BLOCK_POOL_STRUCT
+    struct ACE_OS_THREAD_STRUCT
                     *ace_os_block_pool_suspension_list;
     UINT            ace_os_block_pool_suspension_cnt;
 
@@ -153,7 +153,7 @@ typedef struct ACE_OS_BYTE_POOL_STRUCT
    CHAR        *ace_os_byte_pool_name;
 
    /* Define the number of available bytes in the pool. */
-   ULONG       *ace_os_byte_pool_available;
+   ULONG       ace_os_byte_pool_available;
 
    /* Define the number of fragments in the pool. */
    UINT        ace_os_byte_pool_fragments;
@@ -184,7 +184,7 @@ typedef struct ACE_OS_BYTE_POOL_STRUCT
    UINT        ace_os_byte_pool_suspension_count;
 
    /* Define the created list next and previous pointer. */
-   struct ACE_OS_BLOCK_POOL_STRUCT
+   struct ACE_OS_BYTE_POOL_STRUCT
                *ace_os_byte_block_created_next,
                *ace_os_byte_block_created_prev;
 
@@ -215,6 +215,7 @@ typedef struct ACE_OS_THREAD_STRUCT
     CHAR        *ace_os_thread_name;
     UINT        ace_os_thread_priority;
     UINT        ace_os_thread_state;
+    UINT        ace_os_thread_preempt_threshold;        /* Preemption threshold. */
 
     /* Define pointers to the next and previous threads in the
        created list.  */

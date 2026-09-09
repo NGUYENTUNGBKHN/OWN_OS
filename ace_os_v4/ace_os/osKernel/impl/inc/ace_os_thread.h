@@ -19,6 +19,8 @@ extern "C"
 
 /* Define the MOD32 bit set macro that is used to set/clear a priority bit within a specific
    priority group. */
+
+#define MAP_INDEX                      0
 #ifndef ACE_OS_MOD32_BIT_SET
 #define ACE_OS_MOD32_BIT_SET(a,b)      (b) = (((ULONG) 1) << ((a)));
 #endif
@@ -69,14 +71,20 @@ VOID ace_os_thread_stack_analyze(void);
 VOID ace_os_thread_stack_error_handler(void);
 UINT ace_os_thread_stack_error_notify(void);
 UINT ace_os_thread_suspend(void);
-VOID ace_os_thread_system_preempt_check(void);
-VOID ace_os_thread_system_resume(void);
-VOID ace_os_thread_system_suspend(void);
+
 UINT ace_os_thread_terminate(void);
 UINT ace_os_thread_time_slice_change(void);
 VOID ace_os_thread_time_slice(void);
 VOID ace_os_thread_timeout(void);
 UINT ace_os_thread_wait_abort(void);
+
+
+/* Define internal thread control function prototypes */
+VOID ace_os_thread_schedule(VOID);
+VOID ace_os_thread_stack_build(ACE_OS_THREAD *thread_ptr, VOID (*function_ptr)(VOID));
+VOID ace_os_thread_system_preempt_check(void);
+VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr);
+VOID ace_os_thread_system_suspend(void);
 
 #define THREAD_DECLARE  extern
 
@@ -91,6 +99,8 @@ THREAD_DECLARE VOID*    ace_os_thread_system_stack_ptr;
 
 THREAD_DECLARE ACE_OS_THREAD*    ace_os_thread_current_ptr;
 
+
+THREAD_DECLARE ACE_OS_THREAD*    ace_os_thread_execute_ptr;
 
 /* Define the head pointer of the created thread list.  */
 
@@ -115,6 +125,12 @@ THREAD_DECLARE volatile ULONG  ace_os_thread_system_state;
    no threads are ready at that priority.  */
 
 THREAD_DECLARE ACE_OS_THREAD *ace_os_thread_priority_list[ACE_OS_MAX_PRIORITIES];
+
+THREAD_DECLARE ULONG         ace_os_thread_priority_maps[ACE_OS_MAX_PRIORITIES/32];
+
+THREAD_DECLARE ULONG           ace_os_thread_preempt_maps[ACE_OS_MAX_PRIORITIES/32];
+
+THREAD_DECLARE UINT           ace_os_thread_highest_priority;
 
 #ifdef __cplusplus
 }

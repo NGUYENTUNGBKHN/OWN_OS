@@ -12,7 +12,7 @@
 /***************************************************************************************************************
 **                                                   INCLUDES
 ***************************************************************************************************************/
-#include "ace_os_port.h"
+#include "ace_os_api.h"
 #include "ace_os_semaphore.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
@@ -50,7 +50,7 @@
 
 UINT ace_os_semaphore_ceiling_put()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_semaphore_cleanup()
@@ -60,22 +60,22 @@ VOID ace_os_semaphore_cleanup()
 
 UINT ace_os_semaphore_create()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_semaphore_delete()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_semaphore_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_semaphore_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_semaphore_initilaize(VOID)
@@ -85,27 +85,27 @@ VOID ace_os_semaphore_initilaize(VOID)
 
 UINT ace_os_semaphore_performance_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_semaphore_performance_system_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_semaphore_prioritize()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_semaphore_put_notify()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_semaphore_put()
 {
-    
+    return ACE_OS_SUCCESS;
 }
 
 /***************************************************************************************************************

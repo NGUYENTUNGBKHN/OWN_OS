@@ -12,7 +12,7 @@
 /***************************************************************************************************************
 **                                                   INCLUDES
 ***************************************************************************************************************/
-#include "ace_os_port.h"
+#include "ace_os_api.h"
 #include "ace_os_event_flags.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
@@ -55,47 +55,47 @@ VOID ace_os_event_flags_cleanup()
 
 UINT ace_os_event_flags_create()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_event_flags_delete()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_event_flags_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_event_flags_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_event_flags_initialize()
 {
 
-}
+}   
 
 UINT ace_os_event_flags_performance_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_event_flags_performance_system_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_event_flags_set_notify()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_event_flags_set()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 /***************************************************************************************************************

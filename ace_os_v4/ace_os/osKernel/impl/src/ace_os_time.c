@@ -12,7 +12,7 @@
 /***************************************************************************************************************
 **                                                   INCLUDES
 ***************************************************************************************************************/
-#include "ace_os_port.h"
+#include "ace_os_api.h"
 #include "ace_os_time.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
@@ -65,27 +65,27 @@ VOID ace_os_time_set()
 
 UINT ace_os_timer_activate()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_timer_change()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_timer_change()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_timer_deactivate()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_timer_delete()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_timer_expriration_process()
@@ -95,7 +95,7 @@ VOID ace_os_timer_expriration_process()
 
 UINT ace_os_timer_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_timer_initialize(VOID)
@@ -105,12 +105,12 @@ VOID ace_os_timer_initialize(VOID)
 
 UINT ace_os_timer_performance_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_timer_performance_system_info_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_timer_system_activate()

@@ -9,12 +9,15 @@
     .syntax unified
 
     .global ace_os_thread_current_ptr
+    .global ace_os_thread_execute_ptr
     .global ace_os_timer_time_slice
 
 
 // VOID ace_os_thread_schedule(VOID)
 // {
-
+    .global ace_os_thread_schedule
+    .thumb_func
+ace_os_thread_schedule:
     /* This function should only ever be called on Cortex-M
         from the first schedule request. Subsequent scheduling occurs
         from the PendSV handing routine below. */

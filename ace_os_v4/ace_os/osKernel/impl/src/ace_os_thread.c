@@ -41,9 +41,17 @@
 
 ACE_OS_THREAD   *ace_os_thread_priority_list[ACE_OS_MAX_PRIORITIES];
 
+ULONG           ace_os_thread_priority_maps[ACE_OS_MAX_PRIORITIES/32];
+
+ULONG           ace_os_thread_preempt_maps[ACE_OS_MAX_PRIORITIES/32];
+
+UINT            ace_os_thread_highest_priority;
+
 /* Define the current thread pointer. This variable points to the currently
     executing thread. If this variable is NULL, no thread is executing. */
-ACE_OS_THREAD  *ace_os_thread_current_ptr;
+ACE_OS_THREAD   *ace_os_thread_current_ptr;
+
+ACE_OS_THREAD   *ace_os_thread_execute_ptr;
 
 /***************************************************************************************************************
 **                                         INTERNAL FUNCTION PROTOTYPES
@@ -102,6 +110,7 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
     thread_ptr->ace_os_thread_priority      = priority;
     thread_ptr->ace_os_thread_stack_start   = stack_start;
     thread_ptr->ace_os_thread_stack_size    = stack_size;
+    thread_ptr->ace_os_thread_time_slice    = time_slice;
 
     /* Calculate the end of the thread's stack area */
     temp_ptr = ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(stack_start);
@@ -241,7 +250,7 @@ UINT ace_os_thread_resume(void)
 
 }
 
-VOID ace_os_thread_shell_entry(ACE_OS_THREAD *thread_ptr, VOID (*function_ptr)(VOID))
+VOID ace_os_thread_shell_entry(VOID)
 {
 
 }
@@ -278,9 +287,12 @@ VOID ace_os_thread_system_preempt_check(void)
 
 VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
 {
-    UINT priority;
+    UINT    priority;
+    UINT    priority_bit;
     ACE_OS_THREAD   *head_ptr;
-    ACE_OS_THREAD   *tail_prt;
+    ACE_OS_THREAD   *tail_ptr;
+    ACE_OS_THREAD   *execute_ptr;
+    ACE_OS_THREAD   *current_thread;
 
     ACE_OS_INTERRUPT_SAVE_AREA
 
@@ -324,16 +336,73 @@ VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
             /* Max priorities > 32 */
 
             /* Or in the thread's priority bit. */
-            
+            ACE_OS_MOD32_BIT_SET(priority, priority_bit);
+            ace_os_thread_priority_maps[MAP_INDEX] = ace_os_thread_priority_maps[MAP_INDEX] | priority_bit;
+
+            /* Determine if this newly ready thread is the highest priority. */
+            if (priority < ace_os_thread_highest_priority)
+            {
+                /* A new highest priority thread is present. */
+
+                /* Update the highest priority variable. */
+                ace_os_thread_highest_priority = priority;
+
+                /* Pickup the execute pointer. Since it is going to be refereced multiple
+                    times, it is placed in a local variable. */
+                execute_ptr = ace_os_thread_execute_ptr;
+
+                /* Determine if no thread is currently executing. */
+                if (execute_ptr == ACE_OS_NULL)
+                {
+                    /* Simply setup the execute pointer. */
+                    ace_os_thread_execute_ptr = thread_ptr;
+                }
+                else
+                {
+                    /* Another thread has been scheduled for execution. */
+
+                    /* Check to see if this is a higher priority thread and determine if preemption is allowed. */
+                    if (priority < execute_ptr->ace_os_thread_preempt_threshold)
+                    {
+                        if (execute_ptr->ace_os_thread_preempt_threshold != execute_ptr->ace_os_thread_priority)
+                        {
+                            /* Remember that this thread was preempted by a thread above the thread's threshold. */
+                            ACE_OS_MOD32_BIT_SET(execute_ptr->ace_os_thread_priority, priority_bit);
+                            ace_os_thread_preempt_maps[MAP_INDEX] = ace_os_thread_preempt_maps[MAP_INDEX] | priority_bit;
+                        }
+
+                        ace_os_thread_execute_ptr = thread_ptr;
+                    }
+
+                    return;
+                }
+            }
+
         }
         else
         {
             /* No, there are other threads at this priority already ready. */
 
             /* Just add this thread to the priority list. */
-            
-
+            tail_ptr                                    = head_ptr->ace_os_thread_ready_previous;
+            tail_ptr->ace_os_thread_ready_next          = thread_ptr;
+            head_ptr->ace_os_thread_ready_previous      = thread_ptr;
+            thread_ptr->ace_os_thread_ready_next        = head_ptr;
+            thread_ptr->ace_os_thread_ready_previous    = tail_ptr;
         }
+    }
+
+
+    /* Pickup thread pointer. */
+    ACE_OS_THREAD_GET_CURRENT(current_thread);
+
+    /* Restore interrupt. */
+    ACE_OS_RESTORE
+
+    /* Determine if a preemption condition is preset. */
+    if (current_thread != ace_os_thread_execute_ptr)
+    {
+
     }
 
 }
