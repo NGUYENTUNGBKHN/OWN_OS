@@ -73,7 +73,7 @@ VOID ace_os_initialize_kernel_enter(VOID)
 
         /* Invoke the low-level initialization to handle all processor specific
             initialization issues. */
-        ace_os_initialize_low_level();
+        // ace_os_initialize_low_level();
 
         /* Invoke the high-level initialization to exercise all of the ThreadX
             components and the application's initialization function. */

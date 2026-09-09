@@ -134,7 +134,7 @@ __ace_os_ts_restore:
     /* VFP */
 
     LDMIA   r12!, {r4-r11}                          // Recover thread's registers
-    MRS     PSP, r12                                // Setup the thread's stack pointer
+    MSR     PSP, r12                                // Setup the thread's stack pointer
 
     /* Return to thread */
 

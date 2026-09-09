@@ -55,7 +55,7 @@ ULONG       ace_os_timer_time_slice;
 
 ULONG ace_os_time_get()
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_time_set()
@@ -64,11 +64,6 @@ VOID ace_os_time_set()
 }
 
 UINT ace_os_timer_activate()
-{
-    return ACE_OS_SUCCESS;
-}
-
-UINT ace_os_timer_change()
 {
     return ACE_OS_SUCCESS;
 }

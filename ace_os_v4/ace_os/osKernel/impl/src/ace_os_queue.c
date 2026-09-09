@@ -68,16 +68,6 @@ UINT ace_os_queue_flush()
     return ACE_OS_SUCCESS;
 }   
 
-UINT ace_os_mutex_front_send()
-{
-    return ACE_OS_SUCCESS;
-}
-
-UINT ace_os_mutex_info_get()
-{
-    return ACE_OS_SUCCESS;
-}
-
 VOID ace_os_queue_initilaize(VOID)
 {
 

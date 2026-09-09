@@ -81,6 +81,7 @@ void SysTick_Enable(uint32_t tick_hz)
 
 void SystemInit(void)
 {
+    /* Setting FPU. */
     SCB_CPACR |= (0xFUL << 20);
 #if defined(LAB4_USE) || defined(LAB5_USE)
     SystemClock_Config();

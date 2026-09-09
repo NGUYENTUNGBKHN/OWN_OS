@@ -279,7 +279,34 @@ VOID ace_os_initialize_kernel_enter(VOID);
 
 
 /* Define thread control function prototypes. */
-
+UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr, 
+                          CHAR *name_ptr,
+                          VOID (*entry_function)(ULONG id),
+                          ULONG entry_input,
+                          VOID *stack_start,
+                          ULONG stack_size,
+                          UINT priority,
+                          UINT preempt_threshold,
+                          ULONG time_slice,
+                          UINT auto_start);
+UINT ace_os_thread_delete(VOID);
+UINT ace_os_thread_entry_exit_notify(VOID);
+ACE_OS_THREAD *ace_os_thread_identify(void);
+UINT ace_os_thread_info_get(void);
+VOID ace_os_thread_initialize(void);
+UINT ace_os_thread_performance_info_get(void);
+UINT ace_os_thread_performance_system_info_get(void);
+UINT ace_os_thread_preemption_change(void);
+UINT ace_os_thread_priority_change(void);
+UINT ace_os_thread_relinquish(void);
+UINT ace_os_thread_reset(void);
+UINT ace_os_thread_resume(void);
+UINT ace_os_thread_sleep(void);
+UINT ace_os_thread_stack_error_notify(void);
+UINT ace_os_thread_suspend(void);
+UINT ace_os_thread_terminate(void);
+UINT ace_os_thread_time_slice_change(void);
+UINT ace_os_thread_wait_abort(void);
 
 /* Define timer management function prototypes. */
 

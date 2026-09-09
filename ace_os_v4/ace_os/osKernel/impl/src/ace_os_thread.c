@@ -85,6 +85,7 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
                           VOID *stack_start,
                           ULONG stack_size,
                           UINT priority,
+                          UINT preempt_threshold,
                           ULONG time_slice,
                           UINT auto_start
                         )
@@ -104,13 +105,14 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
     ACE_OS_MEMSET(thread_ptr, 0, sizeof(ACE_OS_THREAD));
 
     /* Place the supplied parameters into the thread's control block. */
-    thread_ptr->ace_os_thread_name          = name_ptr;
-    thread_ptr->ace_os_thread_entry         = entry_function;
-    thread_ptr->ace_os_thread_entry_params  = entry_input;
-    thread_ptr->ace_os_thread_priority      = priority;
-    thread_ptr->ace_os_thread_stack_start   = stack_start;
-    thread_ptr->ace_os_thread_stack_size    = stack_size;
-    thread_ptr->ace_os_thread_time_slice    = time_slice;
+    thread_ptr->ace_os_thread_name              = name_ptr;
+    thread_ptr->ace_os_thread_entry             = entry_function;
+    thread_ptr->ace_os_thread_entry_params      = entry_input;
+    thread_ptr->ace_os_thread_priority          = priority;
+    thread_ptr->ace_os_thread_preempt_threshold = preempt_threshold;
+    thread_ptr->ace_os_thread_stack_start       = stack_start;
+    thread_ptr->ace_os_thread_stack_size        = stack_size;
+    thread_ptr->ace_os_thread_time_slice        = time_slice;
 
     /* Calculate the end of the thread's stack area */
     temp_ptr = ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(stack_start);
@@ -192,22 +194,25 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
 
 UINT ace_os_thread_delete(void)
 {
-    
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_thread_entry_exit_notify(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 ACE_OS_THREAD  *ace_os_thread_identify(void)
 {
+    ACE_OS_THREAD *res = NULL;
 
+
+    return res;
 }
 
 UINT ace_os_thread_info_get(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_thread_initialize(void)
@@ -217,37 +222,37 @@ VOID ace_os_thread_initialize(void)
 
 UINT ace_os_thread_performance_info_get(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_thread_performance_system_info_get(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_thread_preemption_change(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_thread_priority_change(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_thread_relinquish(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_thread_reset(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_thread_resume(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_thread_shell_entry(VOID)
@@ -257,7 +262,7 @@ VOID ace_os_thread_shell_entry(VOID)
 
 UINT ace_os_thread_sleep(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_thread_stack_analyze(void)
@@ -272,12 +277,12 @@ VOID ace_os_thread_stack_error_handler(void)
 
 UINT ace_os_thread_stack_error_notify(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_thread_suspend(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_thread_system_preempt_check(void)
@@ -414,12 +419,12 @@ VOID ace_os_thread_system_suspend(void)
 
 UINT ace_os_thread_terminate(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 UINT ace_os_thread_time_slice_change(void)
 {
-    
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_thread_time_slice(void)
@@ -434,7 +439,7 @@ VOID ace_os_thread_timeout(void)
 
 UINT ace_os_thread_wait_abort(void)
 {
-
+    return ACE_OS_SUCCESS;
 }
 
 

@@ -42,41 +42,7 @@ extern "C"
 #endif 
 
 
-UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr, 
-                          CHAR *name_ptr,
-                          VOID (*entry_function)(ULONG id),
-                          ULONG entry_input,
-                          VOID *stack_start,
-                          ULONG stack_size,
-                          UINT priority,
-                          ULONG time_slice,
-                          UINT auto_start);
-UINT ace_os_thread_delete(VOID);
-UINT ace_os_thread_entry_exit_notify(VOID);
-ACE_OS_THREAD *ace_os_thread_identify(void);
-UINT ace_os_thread_info_get(void);
-VOID ace_os_thread_initialize(void);
-UINT ace_os_thread_performance_info_get(void);
-UINT ace_os_thread_performance_system_info_get(void);
-UINT ace_os_thread_preemption_change(void);
-UINT ace_os_thread_priority_change(void);
-UINT ace_os_thread_relinquish(void);
-UINT ace_os_thread_reset(void);
-UINT ace_os_thread_resume(void);
 
-VOID ace_os_thread_shell_entry(ACE_OS_THREAD *thread_ptr, VOID (*function_ptr)(VOID));
-
-UINT ace_os_thread_sleep(void);
-VOID ace_os_thread_stack_analyze(void);
-VOID ace_os_thread_stack_error_handler(void);
-UINT ace_os_thread_stack_error_notify(void);
-UINT ace_os_thread_suspend(void);
-
-UINT ace_os_thread_terminate(void);
-UINT ace_os_thread_time_slice_change(void);
-VOID ace_os_thread_time_slice(void);
-VOID ace_os_thread_timeout(void);
-UINT ace_os_thread_wait_abort(void);
 
 
 /* Define internal thread control function prototypes */
@@ -85,6 +51,11 @@ VOID ace_os_thread_stack_build(ACE_OS_THREAD *thread_ptr, VOID (*function_ptr)(V
 VOID ace_os_thread_system_preempt_check(void);
 VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr);
 VOID ace_os_thread_system_suspend(void);
+VOID ace_os_thread_shell_entry(VOID);
+VOID ace_os_thread_stack_analyze(void);
+VOID ace_os_thread_stack_error_handler(void);
+VOID ace_os_thread_time_slice(void);
+VOID ace_os_thread_timeout(void);
 
 #define THREAD_DECLARE  extern
 
