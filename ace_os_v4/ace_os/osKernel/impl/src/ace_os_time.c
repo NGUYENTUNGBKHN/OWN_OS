@@ -95,7 +95,8 @@ UINT ace_os_timer_info_get()
 
 VOID ace_os_timer_initialize(VOID)
 {
-
+    /* Initialize the time-slice value to 0 make sure it is disabled */
+    ace_os_timer_time_slice = ((ULONG) 0);
 }
 
 UINT ace_os_timer_performance_info_get()

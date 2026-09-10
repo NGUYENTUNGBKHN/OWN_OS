@@ -215,6 +215,7 @@ typedef struct ACE_OS_THREAD_STRUCT
     CHAR        *ace_os_thread_name;
     UINT        ace_os_thread_priority;
     UINT        ace_os_thread_state;
+    UINT        ace_os_delayed_suspend;                 /* Thread suspending flag */
     UINT        ace_os_thread_preempt_threshold;        /* Preemption threshold. */
 
     /* Define pointers to the next and previous threads in the
@@ -301,7 +302,7 @@ UINT ace_os_thread_priority_change(void);
 UINT ace_os_thread_relinquish(void);
 UINT ace_os_thread_reset(void);
 UINT ace_os_thread_resume(void);
-UINT ace_os_thread_sleep(void);
+UINT ace_os_thread_sleep(ULONG timer_ticks);
 UINT ace_os_thread_stack_error_notify(void);
 UINT ace_os_thread_suspend(void);
 UINT ace_os_thread_terminate(void);
@@ -309,7 +310,7 @@ UINT ace_os_thread_time_slice_change(void);
 UINT ace_os_thread_wait_abort(void);
 
 /* Define timer management function prototypes. */
-
+VOID ace_os_timer_initialize(VOID);
 
 /*  */
 

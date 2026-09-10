@@ -41,21 +41,87 @@ extern "C"
 #define ACE_OS_THREAD_SET_CURRENT(a)            ace_os_thread_current_ptr = (a);
 #endif 
 
+/* Define the lowest bit set macro. Note, that this may be overridden
+   by a port specific definition if there is supporting assembly language
+   instructions in the architecture.  */
 
+#ifndef ACE_OS_LOWEST_SET_BIT_CALCULATE
+#define ACE_OS_LOWEST_SET_BIT_CALCULATE(m, b)       \
+    (b) =  ((ULONG) 0);                         \
+    (m) =  (m) & ((~(m)) + ((ULONG) 1));        \
+    if ((m) < ((ULONG) 0x10))                   \
+    {                                           \
+        if ((m) >= ((ULONG) 4))                 \
+        {                                       \
+            (m) = (m) >> ((ULONG) 2);           \
+            (b) = (b) + ((ULONG) 2);            \
+        }                                       \
+        (b) = (b) + ((m) >> ((ULONG) 1));       \
+    }                                           \
+    else if ((m) < ((ULONG) 0x100))             \
+    {                                           \
+        (m) = (m) >> ((ULONG) 4);               \
+        (b) = (b) + ((ULONG) 4);                \
+        if ((m) >= ((ULONG) 4))                 \
+        {                                       \
+            (m) = (m) >> ((ULONG) 2);           \
+            (b) = (b) + ((ULONG) 2);            \
+        }                                       \
+        (b) = (b) + ((m) >> ((ULONG) 1));       \
+    }                                           \
+    else if ((m) < ((ULONG) 0x10000))           \
+    {                                           \
+        (m) = (m) >> ((ULONG) 8);               \
+        (b) = (b) + ((ULONG) 8);                \
+        if ((m) >= ((ULONG) 0x10))              \
+        {                                       \
+            (m) = (m) >> ((ULONG) 4);           \
+            (b) = (b) + ((ULONG) 4);            \
+        }                                       \
+        if ((m) >= ((ULONG) 4))                 \
+        {                                       \
+            (m) = (m) >> ((ULONG) 2);           \
+            (b) = (b) + ((ULONG) 2);            \
+        }                                       \
+        (b) = (b) + ((m) >> ((ULONG) 1));       \
+    }                                           \
+    else                                        \
+    {                                           \
+        (m) = (m) >> ((ULONG) 16);              \
+        (b) = (b) + ((ULONG) 16);               \
+        if ((m) >= ((ULONG) 0x100))             \
+        {                                       \
+            (m) = (m) >> ((ULONG) 8);           \
+            (b) = (b) + ((ULONG) 8);            \
+        }                                       \
+        if ((m) >= ((ULONG) 16))                \
+        {                                       \
+            (m) = (m) >> ((ULONG) 4);           \
+            (b) = (b) + ((ULONG) 4);            \
+        }                                       \
+        if ((m) >= ((ULONG) 4))                 \
+        {                                       \
+            (m) = (m) >> ((ULONG) 2);           \
+            (b) = (b) + ((ULONG) 2);            \
+        }                                       \
+        (b) = (b) + ((m) >> ((ULONG) 1));       \
+    }
+#endif
 
 
 
 /* Define internal thread control function prototypes */
 VOID ace_os_thread_schedule(VOID);
 VOID ace_os_thread_stack_build(ACE_OS_THREAD *thread_ptr, VOID (*function_ptr)(VOID));
-VOID ace_os_thread_system_preempt_check(void);
+VOID ace_os_thread_system_preempt_check(VOID);
 VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr);
-VOID ace_os_thread_system_suspend(void);
+VOID ace_os_thread_system_suspend(ACE_OS_THREAD *thread_ptr);
 VOID ace_os_thread_shell_entry(VOID);
-VOID ace_os_thread_stack_analyze(void);
-VOID ace_os_thread_stack_error_handler(void);
-VOID ace_os_thread_time_slice(void);
-VOID ace_os_thread_timeout(void);
+VOID ace_os_thread_stack_analyze(VOID);
+VOID ace_os_thread_stack_error_handler(VOID);
+VOID ace_os_thread_time_slice(VOID);
+VOID ace_os_thread_timeout(VOID);
+VOID ace_os_thread_system_return(VOID);
 
 #define THREAD_DECLARE  extern
 
@@ -95,13 +161,13 @@ THREAD_DECLARE volatile ULONG  ace_os_thread_system_state;
    represents the first thread ready at priority 10.  If this entry is NULL,
    no threads are ready at that priority.  */
 
-THREAD_DECLARE ACE_OS_THREAD *ace_os_thread_priority_list[ACE_OS_MAX_PRIORITIES];
+THREAD_DECLARE ACE_OS_THREAD     *ace_os_thread_priority_list[ACE_OS_MAX_PRIORITIES];
 
-THREAD_DECLARE ULONG         ace_os_thread_priority_maps[ACE_OS_MAX_PRIORITIES/32];
+THREAD_DECLARE ULONG             ace_os_thread_priority_maps[ACE_OS_MAX_PRIORITIES/32];
 
-THREAD_DECLARE ULONG           ace_os_thread_preempt_maps[ACE_OS_MAX_PRIORITIES/32];
+THREAD_DECLARE ULONG             ace_os_thread_preempt_maps[ACE_OS_MAX_PRIORITIES/32];
 
-THREAD_DECLARE UINT           ace_os_thread_highest_priority;
+THREAD_DECLARE UINT              ace_os_thread_highest_priority;
 
 #ifdef __cplusplus
 }

@@ -61,7 +61,14 @@ volatile ULONG ace_os_thread_system_state;
 
 VOID ace_os_initialize_high_level()
 {
+    /* TRACE */
 
+
+    /* Call the thread control initialization function. */
+    ace_os_thread_initialize();
+
+    /* Call the timer control initialization function. */
+    ace_os_timer_initialize();
 }
 
 VOID ace_os_initialize_kernel_enter(VOID)
