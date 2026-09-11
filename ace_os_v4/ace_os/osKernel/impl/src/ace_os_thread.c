@@ -47,6 +47,8 @@ ULONG           ace_os_thread_preempt_maps[ACE_OS_MAX_PRIORITIES/32];
 
 UINT            ace_os_thread_highest_priority;
 
+volatile UINT    ace_os_thread_preempt_disable;
+
 /* Define the current thread pointer. This variable points to the currently
     executing thread. If this variable is NULL, no thread is executing. */
 ACE_OS_THREAD   *ace_os_thread_current_ptr;

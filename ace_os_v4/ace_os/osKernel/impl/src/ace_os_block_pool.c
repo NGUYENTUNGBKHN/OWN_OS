@@ -13,6 +13,7 @@
 **                                                   INCLUDES
 ***************************************************************************************************************/
 #include "ace_os_api.h"
+#include "ace_os_thread.h"
 #include "ace_os_block_pool.h"
 /***************************************************************************************************************
 **                                         EXTERNAL FUNCTION PROTOTYPES
@@ -74,6 +75,7 @@ UINT ace_os_block_allocate(ACE_OS_BLOCK_POOL *pool_ptr, VOID **block_ptr, ULONG 
     UCHAR   *temp_ptr;
     UCHAR   **return_ptr;
     UCHAR   **next_block_ptr;
+    ACE_OS_THREAD   *thread_ptr;
 
     /* Disable interrupts to get a block from the pool.  */
     ACE_OS_DISABLE
@@ -111,6 +113,33 @@ UINT ace_os_block_allocate(ACE_OS_BLOCK_POOL *pool_ptr, VOID **block_ptr, ULONG 
 
         if (wait_option != ACE_OS_NO_WAIT)
         {
+            /* Determine if the preempt disable flag is non-zero. */
+            if (ace_os_thread_preempt_disable != ((UINT) 0))
+            {
+                /* Suspension is not allowed if the preempt disable flag is non-zero at this point,
+                    return error completion. */
+                status = ACE_OS_NO_MEMORY;
+
+                /* Restore interrupt. */
+                ACE_OS_RESTORE
+            }
+            else
+            {
+                /* Prepare for suspension of this thread. */
+
+                /* Pickup thread pointer. */
+                ACE_OS_THREAD_GET_CURRENT(thread_ptr);
+
+                /* Setup cleanup routine pointer. */
+
+                /* Setup cleanup information, i.e. this pool control
+                    block. */
+                
+
+                /* Save the return block pointer address as well. */
+                
+            }
+
             status = ACE_OS_SUCCESS;
         }
         else

@@ -169,6 +169,8 @@ THREAD_DECLARE ULONG             ace_os_thread_preempt_maps[ACE_OS_MAX_PRIORITIE
 
 THREAD_DECLARE UINT              ace_os_thread_highest_priority;
 
+THREAD_DECLARE volatile UINT    ace_os_thread_preempt_disable;
+
 #ifdef __cplusplus
 }
 #endif
