@@ -43,6 +43,19 @@ typedef unsigned short              USHORT;
 #define ACE_OS_MAX_PRIORITIES   32
 #endif 
 
+#ifndef ACE_OS_THREAD_GET_SYSTEM_STATE
+
+#if defined(__GNUC__)
+__attribute__( ( always_inline ) ) static inline unsigned int __get_ipsr_value(void)
+{
+unsigned int  ipsr_value;
+    __asm__ volatile (" MRS  %0,IPSR ": "=r" (ipsr_value) );
+    return(ipsr_value);
+}
+
+#define ACE_OS_THREAD_GET_SYSTEM_STATE()           (ace_os_thread_system_state | __get_ipsr_value())
+#endif // __GNUC__
+#endif
 
 /* Define the interrupt disable/restore macros for each compiler. */
 

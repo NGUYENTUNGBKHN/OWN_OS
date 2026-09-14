@@ -137,10 +137,26 @@ UINT ace_os_block_allocate(ACE_OS_BLOCK_POOL *pool_ptr, VOID **block_ptr, ULONG 
                 
 
                 /* Save the return block pointer address as well. */
+
+                /* Set the state to suspended */
+                thread_ptr->ace_os_thread_state = ACE_OS_BLOCK_MEMORY;
+
+                /* Set the suspending flags. */
+                thread_ptr->ace_os_thread_suspending = ACE_OS_TRUE;
+
+                /* Temporarily disable preemption. */
+                ace_os_thread_preempt_disable++;
+
+                /* Restore interrupts. */
+                ACE_OS_RESTORE
+
+                /* Call actual thread suspension routine. */
+                ace_os_thread_system_suspend(thread_ptr);
+
+                /* Return the completion status. */
+
                 
             }
-
-            status = ACE_OS_SUCCESS;
         }
         else
         {
@@ -329,6 +345,7 @@ UINT ace_block_release(VOID *block_ptr)
     UCHAR               *work_ptr;
     // UCHAR               *return_block_ptr;
     UCHAR               **next_block_ptr;
+    UINT                suspended_count;
 
     /* Disable interrupts to put this block back in the pool.  */
     ACE_OS_DISABLE
@@ -345,7 +362,42 @@ UINT ace_block_release(VOID *block_ptr)
     thread_ptr =  pool_ptr -> ace_os_block_pool_suspension_list;
     if (thread_ptr != ACE_OS_NULL)
     {
+        /* Remove the suspended thread from the list. */
 
+        /* Decrement the number of threads suspended. */
+        (pool_ptr->ace_os_block_pool_suspension_cnt)--;
+
+        /* Pickup the suspended count. */
+        suspended_count = (pool_ptr->ace_os_block_pool_suspension_cnt);
+
+        /* See if this is the only suspended thread on the list. */
+        if (suspended_count == ACE_OS_NO_SUSPENSIONS)
+        {
+            /* Yes, the only suspended thread. */
+
+            /* Update the head pointer. */
+            pool_ptr->ace_os_block_pool_suspension_list = ACE_OS_NULL;
+        }
+        else
+        {
+            /* At least one more thread is on the same expiration list. */
+
+            /* Update the list head pointer. */
+            
+
+            /* Update the links of the adjacent threads. */
+
+
+        }
+
+        /* Temporarily disable preemption. */
+        ace_os_thread_preempt_disable++;
+
+        /* Restore interrupts. */
+        ACE_OS_RESTORE
+
+        /* Resume thread. */
+        ace_os_thread_system_resume(thread_ptr);
     }
     else
     {

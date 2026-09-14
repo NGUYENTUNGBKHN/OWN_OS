@@ -94,7 +94,8 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
 {
     ACE_OS_THREAD *next_thread;
     ACE_OS_THREAD *prev_thread;
-
+    ACE_OS_THREAD *saved_thread_ptr;
+    UINT            saved_threshold = ((UINT) 0);
     UCHAR *temp_ptr;
 
     /* ace_os_interrupt_save_area */
@@ -156,13 +157,43 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
     /* Increment the thread created count.  */
     ace_os_thread_created_count++;
 
+    /* Temporarily disable preemption. */
+    ace_os_thread_preempt_disable++;
+
     /* Determine if an automatic start was requested. If so, call the resume
        thread function and then check for a preemption condition. */ 
     if (auto_start == ACE_OS_AUTO_START)
     {
+        /* Determine if the create call is being called from initialization. */
         if (ACE_OS_THREAD_GET_SYSTEM_STATE() >= ACE_OS_INITIALIZE_IN_PROGRESS)
         {
+            /* Yes, this create call was made from initialization. */
 
+            /* Pickup the current thread execute pointer, Which corresponds to the
+                highest priority thread ready to execute. Interrupt lockout is
+                not required, since interrupts are assmued to be disabled during
+                initialization. */
+            saved_thread_ptr = ace_os_thread_execute_ptr;
+
+            /* Determine if there is thread ready for execution. */
+            if (saved_thread_ptr != ACE_OS_NULL)
+            {
+                /* Yes, a thread is ready for execution when initialization completes. */
+
+                /* Save the current preemption-threshold. */
+                saved_threshold = saved_thread_ptr->ace_os_thread_preempt_threshold;
+
+                /* For initialization, temporarily set the preemption-threshold to the 
+                    priority level to make sure the highest-priority thread runs once
+                    initialization is complete. */
+                saved_thread_ptr->ace_os_thread_preempt_threshold = saved_thread_ptr->ace_os_thread_priority;
+            }
+
+        }
+        else
+        {
+            /* Simply set the saved thread pointer to NULL. */
+            saved_thread_ptr = ACE_OS_NULL;
         }
 
         /* Restore interrupt */
@@ -183,6 +214,7 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
         ACE_OS_DISABLE
 
         /* Re-enable preemption. */
+        ace_os_thread_preempt_disable--;
 
         /* Restore interrupt */
         ACE_OS_RESTORE

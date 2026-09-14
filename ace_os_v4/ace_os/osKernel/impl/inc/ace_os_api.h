@@ -32,10 +32,12 @@ extern "C"
 #define ACE_OS_NO_WAIT                      ((ULONG)  0)
 #define ACE_OS_EMPTY                        ((ULONG)  0)
 #define ACE_OS_AUTO_START                   ((UINT)   1)
+#define ACE_OS_DONT_START                   ((UINT)   0)
 #define ACE_OS_NULL                         ((void*)  0)
 #define ACE_OS_FALSE                        ((UINT)   0)
 #define ACE_OS_TRUE                         ((UINT)   1)
 #define ACE_OS_STACK_FILL                   ((ULONG)  0xEFEFEFEFUL)
+#define ACE_OS_NO_SUSPENSIONS               ((UINT)   0)
 
 /* Thread execution state values.  */
 
@@ -185,8 +187,8 @@ typedef struct ACE_OS_BYTE_POOL_STRUCT
 
    /* Define the created list next and previous pointer. */
    struct ACE_OS_BYTE_POOL_STRUCT
-               *ace_os_byte_block_created_next,
-               *ace_os_byte_block_created_prev;
+               *ace_os_byte_pool_created_next,
+               *ace_os_byte_pool_created_prev;
 
 }ACE_OS_BYTE_POOL;
 
@@ -344,9 +346,7 @@ VOID ace_os_timer_initialize(VOID);
 #define ACE_OS_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(temp)       ((ALIGN_TYPE *) ((VOID *) (temp)))
 
 
-#ifndef ACE_OS_THREAD_GET_SYSTEM_STATE
-#define ACE_OS_THREAD_GET_SYSTEM_STATE()           ace_os_thread_system_state
-#endif
+
 
 
 #ifdef __cplusplus

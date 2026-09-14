@@ -223,7 +223,7 @@ UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *p
     ACE_OS_DISABLE
 
     /* Setup the byte pool ID to make it valid. */
-    // pool_ptr->ace_os_byte_pool_id = 
+    pool_ptr->ace_os_byte_pool_id = ACE_OS_BYTE_POOL_ID;
 
     /* Place the byte pool on the list of created byte pools. Frist,
         check for an empty list. */
@@ -231,29 +231,31 @@ UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *p
     {
         /* The created byte pool list is empty. Add byte pool to empty list. */
         ace_os_byte_pool_created_ptr             = pool_ptr;
-        pool_ptr->ace_os_byte_block_created_next = pool_ptr;
-        pool_ptr->ace_os_byte_block_created_prev = pool_ptr;
+        pool_ptr->ace_os_byte_pool_created_next = pool_ptr;
+        pool_ptr->ace_os_byte_pool_created_prev = pool_ptr;
     }
     else
     {
         /* This list is not NULL, add to the end of the list. */
         next_pool = ace_os_byte_pool_created_ptr;
-        prev_pool = next_pool->ace_os_byte_block_created_prev;
+        prev_pool = next_pool->ace_os_byte_pool_created_prev;
 
         /* Place the new byte pool in the list. */
-        next_pool->ace_os_byte_block_created_prev = pool_ptr;
-        prev_pool->ace_os_byte_block_created_next = pool_ptr;
+        next_pool->ace_os_byte_pool_created_prev = pool_ptr;
+        prev_pool->ace_os_byte_pool_created_next = pool_ptr;
 
         /* Setup this byte pool's created links. */
-        pool_ptr->ace_os_byte_block_created_prev = prev_pool;
-        pool_ptr->ace_os_byte_block_created_next = next_pool;
+        pool_ptr->ace_os_byte_pool_created_prev = prev_pool;
+        pool_ptr->ace_os_byte_pool_created_next = next_pool;
     }
 
     /* Increment the number of created byte pools. */
     ace_os_byte_pool_created_count ++;
     
+    /* Restore interrupts. */
     ACE_OS_RESTORE
 
+    /* Return ACE_OS_SUCCESS. */
     return ACE_OS_SUCCESS;
 
 }
