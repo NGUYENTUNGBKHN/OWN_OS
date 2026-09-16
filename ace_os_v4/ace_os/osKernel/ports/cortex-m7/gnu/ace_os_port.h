@@ -57,6 +57,10 @@ unsigned int  ipsr_value;
 #endif // __GNUC__
 #endif
 
+#ifndef ACE_OS_THREAD_SYSTEM_RETRUN_CHECK
+#define ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(c)        (c) = ((ULONG) ace_os_thread_preempt_disable);
+#endif 
+
 /* Define the interrupt disable/restore macros for each compiler. */
 
 #if defined(__GNUC__) || defined(__ICCARM__)

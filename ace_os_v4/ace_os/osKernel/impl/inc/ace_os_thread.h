@@ -16,6 +16,10 @@ extern "C"
 {
 #endif
 
+/* Define thread control specific data definitions.  */
+
+#define ACE_OS_THREAD_ID                            ((ULONG) 0x54485244)
+
 
 /* Define the MOD32 bit set macro that is used to set/clear a priority bit within a specific
    priority group. */

@@ -48,7 +48,7 @@ ULONG ace_os_thread_created_count;
     to the application's system definition function. */
 VOID    *ace_os_initialize_unused_memory;
 
-volatile ULONG ace_os_thread_system_state;
+volatile ULONG ace_os_thread_system_state = ACE_OS_INITIALIZE_IN_PROGRESS;
 
 /***************************************************************************************************************
 **                                         INTERNAL FUNCTION PROTOTYPES
