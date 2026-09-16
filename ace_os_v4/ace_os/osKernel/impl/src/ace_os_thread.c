@@ -112,7 +112,6 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
     thread_ptr->ace_os_thread_entry             = entry_function;
     thread_ptr->ace_os_thread_entry_params      = entry_input;
     thread_ptr->ace_os_thread_priority          = priority;
-    thread_ptr->ace_os_thread_preempt_threshold = preempt_threshold;
     thread_ptr->ace_os_thread_stack_start       = stack_start;
     thread_ptr->ace_os_thread_stack_size        = stack_size;
     thread_ptr->ace_os_thread_time_slice        = time_slice;
@@ -121,6 +120,29 @@ UINT ace_os_thread_create(ACE_OS_THREAD *thread_ptr,
     temp_ptr = ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(stack_start);
     temp_ptr = (ACE_OS_UCHAR_POINTER_ADD(temp_ptr, (stack_size - ((ULONG)1))));
     thread_ptr->ace_os_thread_stack_end = ACE_OS_UCHAR_TO_VOID_POINTER_CONVERT(temp_ptr);
+
+#ifndef ACE_OS_DISABLE_PREEMPTION_THRESHOLD
+
+    /* Preemption-threshold is enabled, setup accordingly. */
+    thread_ptr->ace_os_thread_preempt_threshold = preempt_threshold;
+
+#else
+
+    /* Preemption-threshold is disabled, determine if preemption-threshold was required.  */
+    if (priority != preempt_threshold)
+    {
+        /* Preemption-threshold specified. Since specific preemption-threshold is not supported,
+            disable all preemption. */
+        thread_ptr->ace_os_thread_preempt_threshold = ((UINT) 0);
+    }
+    else
+    {
+        /* Prremption-threshold is not specified, just setup with the priority. */
+        thread_ptr->ace_os_thread_preempt_threshold = priority;
+
+    }
+
+#endif   
 
     /* Set State */
     thread_ptr->ace_os_thread_state = ACE_OS_SUSPENDED;
@@ -477,6 +499,7 @@ VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
                 priority = thread_ptr->ace_os_thread_priority;
 
                 /* Thread state change. */
+                ACE_OS_THREAD_STATE_CHANGE(thread_ptr, ACE_OS_READY);
 
                 /* Determine if there are other threads at this priority that are
                     ready. */

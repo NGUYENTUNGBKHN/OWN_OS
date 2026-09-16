@@ -45,6 +45,15 @@ extern "C"
 #define ACE_OS_THREAD_SET_CURRENT(a)            ace_os_thread_current_ptr = (a);
 #endif 
 
+/* Define state change macro that can be used by run-mode debug agents to keep track of thread
+   state changes. By default, it is mapped to white space.  */
+   
+#ifndef ACE_OS_THREAD_STATE_CHANGE
+#define ACE_OS_THREAD_STATE_CHANGE(a,b)
+#endif
+
+
+
 /* Define the lowest bit set macro. Note, that this may be overridden
    by a port specific definition if there is supporting assembly language
    instructions in the architecture.  */

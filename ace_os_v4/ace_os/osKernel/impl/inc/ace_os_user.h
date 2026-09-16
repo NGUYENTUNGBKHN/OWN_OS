@@ -19,6 +19,12 @@ extern "C"
 
 /* CODE */
 
+/* Determine if preemption-threshold should be disabled. By default, preemption-threshold is
+   enabled. If the application does not use preemption-threshold, it may be disabled to reduce
+   code size and improve performance.  */
+
+#undef ACE_OS_DISABLE_PREEMPTION_THRESHOLD  
+
 
 #ifdef __cplusplus
 }
