@@ -30,6 +30,7 @@ extern "C"
 
 /* API input parameters and general constants.  */
 #define ACE_OS_NO_WAIT                      ((ULONG)  0)
+#define ACE_OS_WAIT_FOREVER                 ((ULONG)  0xFFFFFFFFUL)
 #define ACE_OS_EMPTY                        ((ULONG)  0)
 #define ACE_OS_AUTO_START                   ((UINT)   1)
 #define ACE_OS_DONT_START                   ((UINT)   0)
@@ -307,7 +308,7 @@ UINT ace_os_thread_reset(void);
 UINT ace_os_thread_resume(void);
 UINT ace_os_thread_sleep(ULONG timer_ticks);
 UINT ace_os_thread_stack_error_notify(void);
-UINT ace_os_thread_suspend(void);
+UINT ace_os_thread_suspend(ACE_OS_THREAD *thread_ptr);
 UINT ace_os_thread_terminate(void);
 UINT ace_os_thread_time_slice_change(void);
 UINT ace_os_thread_wait_abort(void);

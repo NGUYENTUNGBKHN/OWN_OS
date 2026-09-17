@@ -52,7 +52,12 @@ extern "C"
 #define ACE_OS_THREAD_STATE_CHANGE(a,b)
 #endif
 
+/* Define the check for whether or not to call the _tx_thread_system_return function.  A non-zero value
+   indicates that _tx_thread_system_return should not be called.  */
 
+#ifndef ACE_OS_THREAD_SYSTEM_RETURN_CHECK
+#define ACE_OS_THREAD_SYSTEM_RETURN_CHECK(c)    (c) = (ULONG) ace_os_thread_preempt_disable; (c) = (c) | ACE_OS_THREAD_GET_SYSTEM_STATE();
+#endif
 
 /* Define the lowest bit set macro. Note, that this may be overridden
    by a port specific definition if there is supporting assembly language

@@ -369,7 +369,15 @@ VOID ace_os_thread_shell_entry(VOID)
     thread_ptr->ace_os_thread_state = ACE_OS_COMPLETED;
 
     /* Thread state change */
-    // ACE_OS_THREAD_STATE
+    ACE_OS_THREAD_STATE_CHANGE(thread_ptr, ACE_OS_COMPLETED)
+
+    /* Set the suspending flag */
+    thread_ptr->ace_os_thread_suspending = ACE_OS_TRUE;
+    
+    /* Setup for no timeout period. */
+
+    /* Temporarily disable preemption */
+    ace_os_thread_preempt_disable++;
 
     /* Restore interrupt. */
     ACE_OS_RESTORE
@@ -403,11 +411,14 @@ UINT ace_os_thread_sleep(ULONG timer_ticks)
         status = ACE_OS_CALLER_ERROR;
     }
     /* Is the caller an ISR or Initialization */
-    // else if ()
-    // {
+    else if (ACE_OS_THREAD_GET_SYSTEM_STATE() != ((ULONG) 0))
+    {
+        /* Restore interrupt */
+        ACE_OS_RESTORE
 
-    // }
-
+        /* Illegal caller of this service */
+        status = ACE_OS_CALLER_ERROR;
+    }
     /* Is the caller the system time thread? */
     
     /* Determine if the requested number of ticks is zero */
@@ -421,14 +432,39 @@ UINT ace_os_thread_sleep(ULONG timer_ticks)
     }
     else
     {
-        /* Set state to suspended. */
-        thread_ptr->ace_os_thread_state = ACE_OS_SLEEP;
+        /* Determine if the preempt disable flag is non-zero. */
+        if (ace_os_thread_preempt_disable != ((ULONG) 0))
+        {
+            /* Restore interrupt. */
+            ACE_OS_RESTORE
 
-        /* Call actual thread suspension routine */
-        ace_os_thread_system_suspend(thread_ptr);
+            /* Suspension is not allowed if the preempt disable flag is non-zero at this point 
+               return error completion */
+            status = ACE_OS_CALLER_ERROR;
+        }
+        else
+        {
+            /* Set state to suspended. */
+            thread_ptr->ace_os_thread_state = ACE_OS_SLEEP;
 
-        /* Return status to the caller */
-        
+            /* Set the suspending flag. */
+            thread_ptr->ace_os_thread_suspending = ACE_OS_FALSE;
+
+            /* Initialize the status to successful. */
+            // thread_ptr->suspe
+
+            /* Temporaily disable preemption. */
+            ace_os_thread_preempt_disable ++;
+
+            /* Restore interrupts. */
+            ACE_OS_RESTORE
+
+            /* Call actual thread suspension routine */
+            ace_os_thread_system_suspend(thread_ptr);
+
+            /* Return status to the caller */
+            status = ACE_OS_SUCCESS;
+        }
     }
 
     return status;
@@ -449,9 +485,38 @@ UINT ace_os_thread_stack_error_notify(void)
     return ACE_OS_SUCCESS;
 }
 
-UINT ace_os_thread_suspend(void)
+UINT ace_os_thread_suspend(ACE_OS_THREAD *thread_ptr)
 {
-    return ACE_OS_SUCCESS;
+    
+
+    ACE_OS_INTERRUPT_SAVE_AREA
+
+    /* Pickup current thread. */
+    ACE_OS_THREAD_GET_CURRENT(current_ptr);
+
+    /* Lockout interrupts while the thread is being suspended. */
+    ACE_OS_DISABLE
+
+    /* Check to make sure the thread suspending flag is still set.  If not, it
+       has already been resumed.  */
+    // if (thread_ptr -> ace_os_thread_suspending == ACE_OS_TRUE)
+    // {
+
+    
+    //}
+
+
+    /* Restore interrupts.  */
+    ACE_OS_RESTORE
+
+    /* Determine if a preemption condition is present.  */
+    if (current_ptr != ace_os_thread_execute_ptr)
+    {
+       
+    }
+
+    /* Return to caller.  */
+    return;
 }
 
 VOID ace_os_thread_system_preempt_check(void)
@@ -459,6 +524,20 @@ VOID ace_os_thread_system_preempt_check(void)
 
 }
 
+/*
+****************************************************************************************************************
+ *                              THREAD SYSTEM RESUME
+ * @brief      This function places the specified thread on the list of ready 
+ *              threads at the thread's specific proirity.
+ * @param      thread_ptr    pointer to thread to resume
+ * @return     VOID
+ *  
+ * @Calls
+ *              ace_thread_system_return            Return to the system
+ * @Called by
+ *              ace_os_thread_create                Thread create function
+****************************************************************************************************************
+*/
 VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
 {
     UINT            priority;
@@ -479,14 +558,14 @@ VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
 
     /* Determine if the thread is in the process of suspending. If so, the thread
         control block is already on the linked list so nothing needs to be done. */
-    if (thread_ptr->ace_os_thread_suspending = ACE_OS_FALSE)
+    if (thread_ptr->ace_os_thread_suspending == ACE_OS_FALSE)
     {
         /* Thread is not in the process of suspending. Now check to make sure the thread
         has not already been resumed. */
         if (thread_ptr->ace_os_thread_state != ACE_OS_READY)
         {
             /* No, now check to see if the delayed suspension flag is set. */
-            if (thread_ptr->ace_os_thread_delayed_suspend = ACE_OS_FALSE)
+            if (thread_ptr->ace_os_thread_delayed_suspend == ACE_OS_FALSE)
             {
                 /* Resume the thread! */
 
@@ -559,6 +638,7 @@ VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
                                 if (combined_flags == ((ULONG) 0))
                                 {
                                     /* Preemption is need - return to the system! */
+                                    ace_os_thread_system_return();
                                 }
 
                                 return;
@@ -594,7 +674,28 @@ VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
         /* Make sure the type of suspenion under way is not a terminate or
             thread completion.  In either of these cases, do not void the 
             interrupted suspension processing. */
-        
+        if (thread_ptr->ace_os_thread_state != ACE_OS_COMPLETED)
+        {
+            /* Make sure the thread isn't terminated. */
+            if (thread_ptr->ace_os_thread_state != ACE_OS_TERMINATED)
+            {
+                /* No, now check to see if the delayed suspension flag is set. */
+                if (thread_ptr->ace_os_thread_delayed_suspend == ACE_OS_FALSE)
+                {
+                    /* Clear the suspending flag. */ 
+                    thread_ptr->ace_os_thread_suspending = ACE_OS_FALSE;
+
+                    /* Restore the sate to ready. */
+                    thread_ptr->ace_os_thread_state = ACE_OS_READY;
+                }
+                else
+                {
+                    /* Clear the delayed suspend flag and cahnge the state. */
+                    thread_ptr->ace_os_thread_delayed_suspend = ACE_OS_FALSE;
+                    thread_ptr->ace_os_thread_state = ACE_OS_SUSPENDED;
+                }
+            }
+        }
     }
     
     /* Pickup thread pointer. */
@@ -606,13 +707,20 @@ VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
     /* Determine if a preemption condition is preset. */
     if (current_thread != ace_os_thread_execute_ptr)
     {
-
+        ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(combined_flags);
+        if (combined_flags == ((ULONG)0))
+        {
+            /* Preemption is need - return to the system! */
+            ace_os_thread_system_return();
+        }
     }
 
 }
 
 VOID ace_os_thread_system_suspend(ACE_OS_THREAD *thread_ptr)
 {
+
+    ACE_OS_INTERRUPT_SAVE_AREA
     ACE_OS_THREAD *current_ptr;
     ACE_OS_THREAD *ready_next;
     ACE_OS_THREAD *ready_previous;
@@ -620,169 +728,206 @@ VOID ace_os_thread_system_suspend(ACE_OS_THREAD *thread_ptr)
     UINT        priority_bit;
     UINT        base_priority;
     ULONG       priority_map;
+    ULONG       timeout;
+    ULONG       combined_flags;
 
-    ACE_OS_INTERRUPT_SAVE_AREA
-
-    /* Pickup current thread. */
+    /* Pickup current thread pointer */
     ACE_OS_THREAD_GET_CURRENT(current_ptr);
 
     /* Lockout interrupts while the thread is being suspended. */
     ACE_OS_DISABLE
-
-    /* Check to make sure the thread suspending flag is still set.  If not, it
-       has already been resumed.  */
-    // if (thread_ptr -> ace_os_thread_suspending == ACE_OS_TRUE)
-    // {
-
-    /* Actually suspend this thread. But first, clear the suspending flag. */
-
-    /* Pickup priority */
-    priority = thread_ptr->ace_os_thread_priority;
-
-    /* Pickup the next ready thread pointer. */
-    ready_next = thread_ptr->ace_os_thread_ready_next;
-
-    /* Determine if there are other threads at this priority that are
-        ready. */
-    if (ready_next != thread_ptr)
+    
+    /* Is the current thread suspending */
+    if (thread_ptr == current_ptr)
     {
-        /* Yes, there are other threads at this priority ready.  */
+        /* Pickup the wait option */
 
-        /* Pickup the previous ready thread pointer. */
-        ready_previous = thread_ptr->ace_os_thread_ready_previous;
-
-        /* Just remove this thread from the priority list. */ 
-        ready_next->ace_os_thread_ready_previous = ready_previous;
-        ready_previous->ace_os_thread_created_next = ready_next;
-
-        /* Determine if this is the head of the priority list. */
-        if (ace_os_thread_priority_list[priority] == thread_ptr)
+        /* Determine if an activation is needed. */
+        if (timeout != ACE_OS_NO_WAIT) 
         {
-            ace_os_thread_priority_list[priority] = ready_next;
+            /* Make sure the suspenion is not a wait-forever. */
+            if (timeout != ACE_OS_WAIT_FOREVER)
+            {
+                /* Activate the thread timer with the timeout value setup in the caller. */
+
+            }
+        }
+        /* Yes, reset time slice for current thread.  */
+
+    }
+
+    /* Decrease the preempt disabled count. */
+    ace_os_thread_preempt_disable --;
+
+    /* Check to make sure the thread suspending flag is still set. If not, it
+        has already been resumed. */
+    if (thread_ptr->ace_os_thread_suspending == ACE_OS_TRUE)
+    {
+        /* Thread state change */
+        ACE_OS_THREAD_STATE_CHANGE(thread_ptr, thread_ptr->ace_os_thread_state);
+
+        /* Actually suspend this thread. But first, clear the suspending flag. */
+        thread_ptr->ace_os_thread_suspending = ACE_OS_FALSE;
+
+        /* Pickup priority */
+        priority = thread_ptr->ace_os_thread_priority;
+
+        /* Pickup the next ready thread pointer. */
+        ready_next = thread_ptr->ace_os_thread_ready_next;
+
+        /* Determine if there are other threads at this priority that are
+            ready. */
+        if (ready_next != thread_ptr)
+        {
+            /* Yes, there are other threads at this priority ready.  */
+
+            /* Pickup the previous ready thread pointer. */
+            ready_previous = thread_ptr->ace_os_thread_ready_previous;
+
+            /* Just remove this thread from the priority list. */
+            ready_next->ace_os_thread_ready_previous = ready_previous;
+            ready_previous->ace_os_thread_created_next = ready_next;
+
+            /* Determine if this is the head of the priority list. */
+            if (ace_os_thread_priority_list[priority] == thread_ptr)
+            {
+                ace_os_thread_priority_list[priority] = ready_next;
+
+                /* Check for a thread preempted that had preemption threshold set. */
+                if (ace_os_thread_preempt_maps[MAP_INDEX] != ((ULONG)0))
+                {
+                    /* Ensure that this thread's priority is clear in the preempt map. */
+                    ACE_OS_MOD32_BIT_SET(priority, priority_bit);
+                    ace_os_thread_preempt_maps[MAP_INDEX] = ace_os_thread_preempt_maps[MAP_INDEX] & (~(priority_bit));
+                }
+            }
+        }
+        else
+        {
+            /* This is the only thread at this priority ready to run.  Set the head
+                   pointer to NULL.  */
+            ace_os_thread_priority_list[priority] = ACE_OS_NULL;
+
+            /* Clear this priority bit in thread ready priority bit map. */
+            ACE_OS_MOD32_BIT_SET(priority, priority_bit);
+            ace_os_thread_priority_maps[MAP_INDEX] = ace_os_thread_priority_maps[MAP_INDEX] & (~(priority_bit));
 
             /* Check for a thread preempted that had preemption threshold set. */
-            if (ace_os_thread_preempt_maps[MAP_INDEX] != ((ULONG) 0))
+            if (ace_os_thread_preempt_maps[MAP_INDEX] != ((ULONG)0))
             {
                 /* Ensure that this thread's priority is clear in the preempt map. */
                 ACE_OS_MOD32_BIT_SET(priority, priority_bit);
                 ace_os_thread_preempt_maps[MAP_INDEX] = ace_os_thread_preempt_maps[MAP_INDEX] & (~(priority_bit));
             }
-        }
-    }
-    else
-    {
-        /* This is the only thread at this priority ready to run.  Set the head
-               pointer to NULL.  */
-        ace_os_thread_priority_list[priority] = ACE_OS_NULL;
 
-        /* Clear this priority bit in thread ready priority bit map. */
-        ACE_OS_MOD32_BIT_SET(priority, priority_bit);
-        ace_os_thread_priority_maps[MAP_INDEX] = ace_os_thread_priority_maps[MAP_INDEX] &(~(priority_bit));
+            /* Setup the base priority to zero. */
+            base_priority = ((UINT)0);
 
-        /* Check for a thread preempted that had preemption threshold set. */
-        if (ace_os_thread_preempt_maps[MAP_INDEX] != ((ULONG)0))
-        {
-            /* Ensure that this thread's priority is clear in the preempt map. */
-            ACE_OS_MOD32_BIT_SET(priority, priority_bit);
-            ace_os_thread_preempt_maps[MAP_INDEX] = ace_os_thread_preempt_maps[MAP_INDEX] & (~(priority_bit));
-        }
+            /* Setup working variable for the priority map. */
+            priority_map = ace_os_thread_priority_maps[MAP_INDEX];
 
-        /* Setup the base priority to zero. */
-        base_priority = ((UINT) 0);
-
-        /* Setup working variable for the priority map. */
-        priority_map = ace_os_thread_priority_maps[MAP_INDEX];
-
-        /* Make a quick check for no other threads ready for execution. */
-        if (priority_map == ((ULONG)0)) 
-        {
-            /* Nothing else is ready.  Set highest priority and execute thread
-                accordingly.  */
-            ace_os_thread_highest_priority = ((UINT) ACE_OS_MAX_PRIORITIES);
-            ace_os_thread_execute_ptr = ACE_OS_NULL;
-
-            /* Resotre interrupt */
-            ACE_OS_RESTORE
-
-            return;
-        }
-        else
-        {
-            /* Other threads at different priority levels are ready to run.  */
-
-            /* Calculate the lowest bit set in the priority map. */
-            ACE_OS_LOWEST_SET_BIT_CALCULATE(priority_map, priority_bit);
-
-            /* Setup the next highest priority variable.  */
-            ace_os_thread_highest_priority = base_priority + ((UINT) priority_bit);
-        }
-    }
-
-    /* Determine if the suspending thread is the thread designated to execute. */
-    if (thread_ptr == ace_os_thread_execute_ptr)
-    {
-        /* Pickup the highest priority thread to execute. */
-        ace_os_thread_execute_ptr = ace_os_thread_priority_list[ace_os_thread_highest_priority];
-
-        if (ace_os_thread_preempt_maps[MAP_INDEX] != ((ULONG) 0))
-        {
-            /* Yes, there was a thread preempted when it was using preemption-threshold. */
-
-            /* Disable preemption */
-            
-            /* Restore interrupt. */
-            ACE_OS_RESTORE
-
-            /* Disable interrupt. */
-            ACE_OS_DISABLE
-
-            /* Calculate the thread with preemption threshold set that
-                was interrupted by a thread above the preemption level. */
-            
-            base_priority = ((UINT) 0);
-
-
-            /* Setup temporary preempted maps. */
-            priority_map = ace_os_thread_preempt_maps[MAP_INDEX];
-
-            /* Calculate the lowest bit set in the priority map. */
-            ACE_OS_LOWEST_SET_BIT_CALCULATE(priority_map, priority_bit);
-
-            /* Setup the highest priority preempted thread.  */
-            priority = base_priority + ((UINT) priority_bit);
-
-            if (ace_os_thread_highest_priority >= (ace_os_thread_priority_list[priority])->ace_os_thread_preempt_threshold)
+            /* Make a quick check for no other threads ready for execution. */
+            if (priority_map == ((ULONG)0))
             {
-                /* Thread not allowed to execute until earlier preempted thread finishes or lowers its
-                       preemption-threshold.  */
-                ace_os_thread_execute_ptr = ace_os_thread_priority_list[priority];
+                /* Nothing else is ready.  Set highest priority and execute thread
+                    accordingly.  */
+                ace_os_thread_highest_priority = ((UINT)ACE_OS_MAX_PRIORITIES);
+                ace_os_thread_execute_ptr = ACE_OS_NULL;
 
-                /* Clear the correspoding bit in the preempted map, since the preemption has been restored. */
-                ACE_OS_MOD32_BIT_SET(priority, priority_bit);
-                ace_os_thread_preempt_maps[MAP_INDEX] = ace_os_thread_preempt_maps[MAP_INDEX] & (~(priority_bit));
+                /* Resotre interrupt */
+                ACE_OS_RESTORE
+
+                return;
+            }
+            else
+            {
+                /* Other threads at different priority levels are ready to run.  */
+
+                /* Calculate the lowest bit set in the priority map. */
+                ACE_OS_LOWEST_SET_BIT_CALCULATE(priority_map, priority_bit);
+
+                /* Setup the next highest priority variable.  */
+                ace_os_thread_highest_priority = base_priority + ((UINT)priority_bit);
             }
         }
 
-        /* Restore interrupt. */
-        ACE_OS_RESTORE
+        /* Determine if the suspending thread is the thread designated to execute. */
+        if (thread_ptr == ace_os_thread_execute_ptr)
+        {
+            /* Pickup the highest priority thread to execute. */
+            ace_os_thread_execute_ptr = ace_os_thread_priority_list[ace_os_thread_highest_priority];
 
-        /* Return to caller */
-        return;
+            if (ace_os_thread_preempt_maps[MAP_INDEX] != ((ULONG)0))
+            {
+                /* Yes, there was a thread preempted when it was using preemption-threshold. */
+
+                /* Disable preemption */
+
+                /* Restore interrupt. */
+                ACE_OS_RESTORE
+
+                /* Disable interrupt. */
+                ACE_OS_DISABLE
+
+                /* Calculate the thread with preemption threshold set that
+                    was interrupted by a thread above the preemption level. */
+
+                base_priority = ((UINT)0);
+
+                /* Setup temporary preempted maps. */
+                priority_map = ace_os_thread_preempt_maps[MAP_INDEX];
+
+                /* Calculate the lowest bit set in the priority map. */
+                ACE_OS_LOWEST_SET_BIT_CALCULATE(priority_map, priority_bit);
+
+                /* Setup the highest priority preempted thread.  */
+                priority = base_priority + ((UINT)priority_bit);
+
+                if (ace_os_thread_highest_priority >= (ace_os_thread_priority_list[priority])->ace_os_thread_preempt_threshold)
+                {
+                    /* Thread not allowed to execute until earlier preempted thread finishes or lowers its
+                           preemption-threshold.  */
+                    ace_os_thread_execute_ptr = ace_os_thread_priority_list[priority];
+
+                    /* Clear the correspoding bit in the preempted map, since the preemption has been restored. */
+                    ACE_OS_MOD32_BIT_SET(priority, priority_bit);
+                    ace_os_thread_preempt_maps[MAP_INDEX] = ace_os_thread_preempt_maps[MAP_INDEX] & (~(priority_bit));
+                }
+            }
+
+            /* Restore interrupt. */
+            ACE_OS_RESTORE
+
+            /* Determine if preemption should take place. This is only possible if the current thread pointer is
+                not the same as the execute thread pointer AND the system state and preempt disable flag are clear.  */
+            ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(combined_flags)
+            if (combined_flags == ((ULONG) 0))
+            {
+                /* preemption is needed - return to the system! */
+                ace_os_thread_system_return();
+            }
+
+            /* Return to caller */
+            return;
+        }
     }
-    //}
 
-
-    /* Restore interrupts.  */
+    /* Restore interrupt */
     ACE_OS_RESTORE
 
-    /* Determine if a preemption condition is present.  */
+    /* Determine if a preemption condition is present. */
     if (current_ptr != ace_os_thread_execute_ptr)
     {
-       
-    }
+        /* Determine if preemption should take place. This is only possible if the current thread pointer is
+                not the same as the execute thread pointer AND the system state and preempt disable flag are clear.  */
+        ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(combined_flags)
+        if (combined_flags == ((ULONG)0))
+        {
+            /* preemption is needed - return to the system! */
+            ace_os_thread_system_return();
+        }
+    } 
 
-    /* Return to caller.  */
-    return;
 }
 
 UINT ace_os_thread_terminate(void)

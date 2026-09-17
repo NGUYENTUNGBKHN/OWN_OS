@@ -55,11 +55,22 @@ unsigned int  ipsr_value;
 
 #define ACE_OS_THREAD_GET_SYSTEM_STATE()           (ace_os_thread_system_state | __get_ipsr_value())
 #endif // __GNUC__
-#endif
+#endif // ACE_OS_THREAD_GET_SYSTEM_STATE
 
 #ifndef ACE_OS_THREAD_SYSTEM_RETRUN_CHECK
 #define ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(c)        (c) = ((ULONG) ace_os_thread_preempt_disable);
 #endif 
+
+#ifndef ACE_OS_DISABLE_INLINE
+/* Define the ACE_OS_LOWEST_SET_BIT_CALCULATE macro for each compiler. */
+#ifdef __ICCAM__            /* IAR complier */
+#elif defined(__CC_ARM)     /* AC5 compiler */
+#elif defined(__GNUC__)     /* GCC and AC6 compiler */
+
+#define ACE_OS_LOWEST_SET_BIT_CALCULATE(m,b)    __asm__ volatile (" RBIT %0,%1": "=r" (m): "r" (m) ); \
+                                                __asm__ volatile (" CLZ  %0,%1": "=r" (b): "r" (m));
+
+#endif // compiler
 
 /* Define the interrupt disable/restore macros for each compiler. */
 
@@ -105,21 +116,48 @@ unsigned int int_posture;
 
     int_posture = __get_interrupt_posture();
 
-#ifdef TX_PORT_USE_BASEPRI
-    __set_basepri_value(TX_PORT_BASEPRI);
+#ifdef ACE_OS_PORT_USE_BASEPRI
+    __set_basepri_value(ACE_OS_PORT_BASEPRI);
 #else
     __asm__ volatile ("CPSID i" : : : "memory");
 #endif
     return(int_posture);
 }
 
+__attribute__( ( always_inline ) ) static inline void ace_os_thread_system_return_inline(void)
+{
+unsigned int interrupt_save;
+
+    /* Set PendSV to invoke ThreadX scheduler. */
+    *((volatile ULONG *) 0xE000ED04) = ((ULONG) 0x10000000);
+    __asm__ volatile ("dsb 0xF \n isb 0xF" : : : "memory");
+    if (__get_ipsr_value() == 0)
+    {
+        interrupt_save = __get_interrupt_posture();
+#ifdef ACE_OS_PORT_USE_BASEPRI
+        __set_basepri_value(0);
+#else
+        __enable_interrupts();
+#endif
+        __restore_interrupts(interrupt_save);
+        __asm__ volatile ("isb 0xF " : : : "memory");
+    }
+}
+
 
 #define ACE_OS_INTERRUPT_SAVE_AREA          UINT interrupt_save;
 #define ACE_OS_DISABLE                      interrupt_save = __disable_interrupt();
 #define ACE_OS_RESTORE                      __restore_interrupt(interrupt_save);
-#else
+#else   // not __GNUC__ || __ICCARM__
 
-#endif
+#endif // __GNUC__ || __ICCARM__
+
+/* Redefine ace_os_thread_system_return for improved performance */
+#define ace_os_thread_system_return     ace_os_thread_system_return_inline
+
+#else   // define ACE_OS_DISABLE_INLINE
+
+#endif  // ACE_OS_DISABLE_INLINE
 
 #ifdef __cplusplus
 }
