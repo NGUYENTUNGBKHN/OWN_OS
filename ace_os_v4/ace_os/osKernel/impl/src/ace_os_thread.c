@@ -489,34 +489,8 @@ UINT ace_os_thread_suspend(ACE_OS_THREAD *thread_ptr)
 {
     
 
-    ACE_OS_INTERRUPT_SAVE_AREA
-
-    /* Pickup current thread. */
-    ACE_OS_THREAD_GET_CURRENT(current_ptr);
-
-    /* Lockout interrupts while the thread is being suspended. */
-    ACE_OS_DISABLE
-
-    /* Check to make sure the thread suspending flag is still set.  If not, it
-       has already been resumed.  */
-    // if (thread_ptr -> ace_os_thread_suspending == ACE_OS_TRUE)
-    // {
-
-    
-    //}
-
-
-    /* Restore interrupts.  */
-    ACE_OS_RESTORE
-
-    /* Determine if a preemption condition is present.  */
-    if (current_ptr != ace_os_thread_execute_ptr)
-    {
-       
-    }
-
     /* Return to caller.  */
-    return;
+    return ACE_OS_SUCCESS;
 }
 
 VOID ace_os_thread_system_preempt_check(void)
@@ -837,6 +811,16 @@ VOID ace_os_thread_system_suspend(ACE_OS_THREAD *thread_ptr)
                 /* Resotre interrupt */
                 ACE_OS_RESTORE
 
+                /* Determine if preemption should take place. This is only possible if the current thread pointer is
+                not the same as the execute thread pointer AND the system state and preempt disable flag are clear.  */
+                ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(combined_flags)
+                if (combined_flags == ((ULONG)0))
+                {
+                    /* preemption is needed - return to the system! */
+                    ace_os_thread_system_return();
+                }
+
+                /* Return to caller */
                 return;
             }
             else
@@ -862,12 +846,19 @@ VOID ace_os_thread_system_suspend(ACE_OS_THREAD *thread_ptr)
                 /* Yes, there was a thread preempted when it was using preemption-threshold. */
 
                 /* Disable preemption */
+                ace_os_thread_preempt_disable++;
 
                 /* Restore interrupt. */
                 ACE_OS_RESTORE
 
+                /* Interrupts are enabled briefly here to keep the interrupt
+                    lockout time deterministic. */
+
                 /* Disable interrupt. */
                 ACE_OS_DISABLE
+
+                /* Decrement the preemption disable variable. */
+                ace_os_thread_preempt_disable++;
 
                 /* Calculate the thread with preemption threshold set that
                     was interrupted by a thread above the preemption level. */
