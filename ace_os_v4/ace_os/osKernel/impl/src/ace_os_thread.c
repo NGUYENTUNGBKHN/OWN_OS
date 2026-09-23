@@ -448,7 +448,7 @@ UINT ace_os_thread_sleep(ULONG timer_ticks)
             thread_ptr->ace_os_thread_state = ACE_OS_SLEEP;
 
             /* Set the suspending flag. */
-            thread_ptr->ace_os_thread_suspending = ACE_OS_FALSE;
+            thread_ptr->ace_os_thread_suspending = ACE_OS_TRUE;
 
             /* Initialize the status to successful. */
             // thread_ptr->suspe
@@ -487,20 +487,56 @@ UINT ace_os_thread_stack_error_notify(void)
 
 UINT ace_os_thread_suspend(ACE_OS_THREAD *thread_ptr)
 {
-    
+    (VOID)thread_ptr;
 
     /* Return to caller.  */
     return ACE_OS_SUCCESS;
 }
 
+/*
+****************************************************************************************************************
+ *                          SYSTEM PREEMPTION CHECK
+ * 
+ * @brief      This function checks for preemption that could have occurred as a result scheduling activities
+ *              occuring while the preempt disable flag was set.
+ * @return     VOID
+ * 
+****************************************************************************************************************
+*/
 VOID ace_os_thread_system_preempt_check(void)
 {
+    ULONG           combined_flags;
+    ACE_OS_THREAD   *current_thread;
+    ACE_OS_THREAD   *thread_ptr;
 
+    /* Combine the system state and preempt disable flags into one for comparison. */
+    ACE_OS_THREAD_SYSTEM_RETURN_CHECK(combined_flags);
+    
+    /* Determine if we are in a system state (ISR or Initialization) or internal preemption
+        is disabled */
+    if (combined_flags == ((ULONG) 0))
+    {
+        /* No, at thread execute level so continue checking for preemption. */
+
+        /* Pickup thread pointer */
+        ACE_OS_THREAD_GET_CURRENT(current_thread);
+
+        /* Pickup the next execute pointer */
+        thread_ptr = ace_os_thread_execute_ptr;
+
+        /* Determine if preemption should take place. */
+        if (current_thread != thread_ptr)
+        {
+            /* Return to the system so the higher priority thread can be scheduled. */
+            ace_os_thread_system_return();
+        }
+    }
 }
 
 /*
 ****************************************************************************************************************
  *                              THREAD SYSTEM RESUME
+ * 
  * @brief      This function places the specified thread on the list of ready 
  *              threads at the thread's specific proirity.
  * @param      thread_ptr    pointer to thread to resume
@@ -608,7 +644,7 @@ VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
                                 ACE_OS_RESTORE
 
 
-                                ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(combined_flags);
+                                ACE_OS_THREAD_SYSTEM_RETURN_CHECK(combined_flags);
                                 if (combined_flags == ((ULONG) 0))
                                 {
                                     /* Preemption is need - return to the system! */
@@ -681,7 +717,7 @@ VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
     /* Determine if a preemption condition is preset. */
     if (current_thread != ace_os_thread_execute_ptr)
     {
-        ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(combined_flags);
+        ACE_OS_THREAD_SYSTEM_RETURN_CHECK(combined_flags);
         if (combined_flags == ((ULONG)0))
         {
             /* Preemption is need - return to the system! */
@@ -691,6 +727,18 @@ VOID ace_os_thread_system_resume(ACE_OS_THREAD *thread_ptr)
 
 }
 
+/*
+****************************************************************************************************************
+ *                              THREAD SYSTEM SUSPEND   
+ * 
+ * @brief      This function suspends the specified thread and changes the thread state to the value specified.
+ *              *Note:
+ *                  delayed suspenion processing is handled outside of this routine.
+ * @param      thread_ptr    Pointer to thread to suspend
+ * @return     VOID
+ * 
+****************************************************************************************************************
+*/
 VOID ace_os_thread_system_suspend(ACE_OS_THREAD *thread_ptr)
 {
 
@@ -813,7 +861,7 @@ VOID ace_os_thread_system_suspend(ACE_OS_THREAD *thread_ptr)
 
                 /* Determine if preemption should take place. This is only possible if the current thread pointer is
                 not the same as the execute thread pointer AND the system state and preempt disable flag are clear.  */
-                ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(combined_flags)
+                ACE_OS_THREAD_SYSTEM_RETURN_CHECK(combined_flags)
                 if (combined_flags == ((ULONG)0))
                 {
                     /* preemption is needed - return to the system! */
@@ -891,7 +939,7 @@ VOID ace_os_thread_system_suspend(ACE_OS_THREAD *thread_ptr)
 
             /* Determine if preemption should take place. This is only possible if the current thread pointer is
                 not the same as the execute thread pointer AND the system state and preempt disable flag are clear.  */
-            ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(combined_flags)
+            ACE_OS_THREAD_SYSTEM_RETURN_CHECK(combined_flags)
             if (combined_flags == ((ULONG) 0))
             {
                 /* preemption is needed - return to the system! */
@@ -911,7 +959,7 @@ VOID ace_os_thread_system_suspend(ACE_OS_THREAD *thread_ptr)
     {
         /* Determine if preemption should take place. This is only possible if the current thread pointer is
                 not the same as the execute thread pointer AND the system state and preempt disable flag are clear.  */
-        ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(combined_flags)
+        ACE_OS_THREAD_SYSTEM_RETURN_CHECK(combined_flags)
         if (combined_flags == ((ULONG)0))
         {
             /* preemption is needed - return to the system! */

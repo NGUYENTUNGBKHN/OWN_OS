@@ -57,9 +57,19 @@ unsigned int  ipsr_value;
 #endif // __GNUC__
 #endif // ACE_OS_THREAD_GET_SYSTEM_STATE
 
-#ifndef ACE_OS_THREAD_SYSTEM_RETRUN_CHECK
-#define ACE_OS_THREAD_SYSTEM_RETRUN_CHECK(c)        (c) = ((ULONG) ace_os_thread_preempt_disable);
+/* Define the check for whether or not to call the _tx_thread_system_return function.  A non-zero value
+   indicates that _tx_thread_system_return should not be called. This overrides the definition in tx_thread.h
+   for Cortex-M since so we don't waste time checking the _tx_thread_system_state variable that is always
+   zero after initialization for Cortex-M ports. */
+
+#ifndef ACE_OS_THREAD_SYSTEM_RETURN_CHECK
+#define ACE_OS_THREAD_SYSTEM_RETURN_CHECK(c)        (c) = ((ULONG) ace_os_thread_preempt_disable);
 #endif 
+
+/* Define the macro to ensure ace_os_thread_preempt_disable is set early in initialization in order to 
+    prevent early scheduling on Cortex-M parts. */
+
+#define ACE_OS_PORT_SPECIFIC_POST_INITIALIZATION     ace_os_thread_preempt_disable++;
 
 #ifndef ACE_OS_DISABLE_INLINE
 /* Define the ACE_OS_LOWEST_SET_BIT_CALCULATE macro for each compiler. */
@@ -139,7 +149,7 @@ unsigned int interrupt_save;
 #else
         __enable_interrupts();
 #endif
-        __restore_interrupts(interrupt_save);
+        __restore_interrupt(interrupt_save);
         __asm__ volatile ("isb 0xF " : : : "memory");
     }
 }

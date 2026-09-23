@@ -85,6 +85,9 @@ VOID ace_os_initialize_kernel_enter(VOID)
         /* Invoke the high-level initialization to exercise all of the ThreadX
             components and the application's initialization function. */
         ace_os_initialize_high_level();
+
+        /* Call any port specific post-processing. */
+        ACE_OS_PORT_SPECIFIC_POST_INITIALIZATION
     }
 
     ace_os_thread_system_state = ACE_OS_INITIALIZE_IN_PROGRESS;

@@ -4,14 +4,13 @@
 #include "ace_os_user.h"
 #endif
 
-    .text
-    .align 4
-    .syntax unified
-
     .global ace_os_thread_current_ptr
     .global ace_os_thread_execute_ptr
     .global ace_os_timer_time_slice
 
+    .text
+    .align 4
+    .syntax unified
 
 // VOID ace_os_thread_schedule(VOID)
 // {
@@ -25,6 +24,10 @@ ace_os_thread_schedule:
 
     /* Clear the preempt-disable flag to enable rescheduling after initialization
         on target Cortex-M. */
+    
+    MOV     r0, #0                                  // Build value for ACE_OS_FALSE
+    LDR     r2, =ace_os_thread_preempt_disable      // Build address of preempt disable flag
+    STR     r0, [r2, #0]                            // Clear preempt disable flag
 
     /* Clear CONTROL.FPCA bit sp VFP resgiters aren't unnecessarily stacked. */
 

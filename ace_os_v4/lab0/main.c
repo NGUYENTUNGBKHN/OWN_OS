@@ -84,6 +84,9 @@ void    thread_1_entry(ULONG thread_input)
         /* Increment the thread counter.  */
         thread_1_counter++;
 
+        /* Sleep */
+        ace_os_thread_sleep(10);
+
         /* Check status.  */
         if (status != ACE_OS_SUCCESS)
             break;

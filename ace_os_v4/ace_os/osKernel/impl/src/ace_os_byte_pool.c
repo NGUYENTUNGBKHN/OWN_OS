@@ -96,6 +96,7 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
         /* Determine of we are finished. */
         if (work_ptr != ACE_OS_NULL)
         {
+            /* Yes, we have found a block the search is finished. */
             finish = ACE_OS_TRUE;
         }
         else
@@ -103,7 +104,7 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
             /* No block was found, does this thread still own the pool. */
             if (pool_ptr->ace_os_byte_pool_owner == thread_ptr)
             {
-                /*  */
+                /* Yes, then we have looked through the entire pool and haven't found the memory. */
                 finish = ACE_OS_TRUE;
             }
         }
@@ -225,7 +226,7 @@ UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *p
     /* Setup the byte pool ID to make it valid. */
     pool_ptr->ace_os_byte_pool_id = ACE_OS_BYTE_POOL_ID;
 
-    /* Place the byte pool on the list of created byte pools. Frist,
+    /* Place the byte pool on the list of created byte pools. First,
         check for an empty list. */
     if (ace_os_byte_pool_created_count == ACE_OS_EMPTY)
     {
@@ -458,7 +459,39 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
                 next_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(next_ptr);
                 this_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(current_ptr);
                 *next_block_link_ptr = *this_block_link_ptr;       
+                work_ptr            = ACE_OS_UCHAR_POINTER_ADD(next_ptr, (sizeof(UCHAR *)));
+                free_ptr            = ACE_OS_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(work_ptr);
+                *free_ptr           = ACE_OS_BYTE_BLOCK_FREE;
 
+                /* Increase the total fragment counter. */
+                pool_ptr->ace_os_byte_pool_fragments++;
+
+                /* Update the current pointer to point at the newly created block. */
+                *this_block_link_ptr = next_ptr;
+
+                /* Set available equal to memory size for subsequent calcualation. */
+                available_bytes = memory_size;
+
+
+            }
+
+            /* In any case, mark the current block as allocated. */
+            work_ptr            = ACE_OS_UCHAR_POINTER_ADD(current_ptr, (sizeof(UCHAR *)));
+            this_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(work_ptr);
+            *this_block_link_ptr = ACE_OS_BYTE_POOL_TO_UCHAR_POINTER_CONVERT(pool_ptr);
+
+            /* Reduce the number of available bytes in the pool. */
+            pool_ptr->ace_os_byte_pool_available = (pool_ptr->ace_os_byte_pool_available - available_bytes) 
+                                                - ((sizeof(UCHAR *)) + (sizeof(ALIGN_TYPE)));
+
+
+            /* Determine if the search pointer needs to be updated. This is only done
+                if the search pointer matches the block to be returned. */
+            if (current_ptr == pool_ptr->ace_os_byte_pool_search)
+            {
+                /* Yse, update the search pointer to the next block. */
+                this_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(current_ptr);
+                pool_ptr->ace_os_byte_pool_search = * this_block_link_ptr;
             }
 
             /* Restore interrupts. */

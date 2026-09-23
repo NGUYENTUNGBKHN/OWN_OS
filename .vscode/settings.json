@@ -40,11 +40,11 @@
     "doxdocgen.c.setterText": "Set {name}",
     
 
-    "cortex-debug.variableUseNaturalFormat": true,
+    "cortex-debug.variableUseNaturalFormat": false,
     "makefile.makefilePath": "E:\\Project\\Embedded\\STM32\\stm32f746-disco\\normal\\ACE\\Bootloader\\Makefile",
     "files.associations": {
         "*.h": "c",
         "cstdint": "c"
     },
-    "C_Cpp.default.compilerPath": "c:/gcc-arm-none-eabi/bin/arm-none-eabi-gcc.exe",
+    "C_Cpp.default.compilerPath": "d:\\Toolchain_2\\bin\\arm-none-eabi-gcc.exe",
 }
