@@ -58,10 +58,12 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
 {
     ACE_OS_INTERRUPT_SAVE_AREA
 
-    UINT status = ACE_OS_SUCCESS;
-    UINT finish;
+    UINT            status = ACE_OS_SUCCESS;
+    UINT            finish;
+    UINT            suspended_count;
     UCHAR           *work_ptr;
-
+    ACE_OS_THREAD   *next_thread;
+    ACE_OS_THREAD   *previous_thread;
     ACE_OS_THREAD   *thread_ptr;
 
     /* Round the memory sizer up to the next size that is ewnely divisible by
@@ -146,11 +148,67 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
                 /* Prepare for suspenion of this thread. */
 
                 /* Setup cleanup routine pointer */
-                // thread_ptr->ace_os_thread_suspend_cleanup = &(ace_os_byte_pool_cleanup);
+                thread_ptr->ace_os_thread_suspend_cleanup = &(ace_os_byte_pool_cleanup);
 
                 /* Setup cleanup information, i.e. this pool control
                     block. */
-                // thread_ptr->
+                thread_ptr->ace_os_thread_suspend_control_block = (VOID*)pool_ptr;
+
+                /* Save the return memory pointer address as well. */
+                thread_ptr->ace_os_thread_additional_suspend_info = (VOID*)memory_ptr;
+
+                /* Save the byte size requested */
+                thread_ptr->ace_os_thread_suspend_info = memory_size;
+
+                /* Increment the suspension sequence number, which is used to identify
+                    this suspension event. */
+                thread_ptr->ace_os_thread_suspension_sequence ++;
+
+                /* Pickup the number of suspend threads */
+                suspended_count = pool_ptr->ace_os_byte_pool_suspended_count ++;
+
+                /* Increment the suspension count. */
+                (pool_ptr->ace_os_byte_pool_suspended_count)++;
+
+                /* Setup suspension list. */
+                if (suspended_count == ACE_OS_NO_SUSPENSIONS)
+                {
+                    /* No other threads are suspended. Setup the head pointer and
+                        just setup this theads pointer to itself. */
+                    pool_ptr->ace_os_byte_pool_suspension_list = thread_ptr;
+                    thread_ptr->ace_os_thread_suspended_next = thread_ptr;
+                    thread_ptr->ace_os_thread_suspended_previous = thread_ptr;
+                }
+                else
+                {
+                    /* This list is not NULL, and current thread to the end. */
+                    next_thread =                                   pool_ptr->ace_os_byte_pool_suspension_list;
+                    thread_ptr->ace_os_thread_suspended_next =      next_thread;
+                    previous_thread =                               next_thread->ace_os_thread_suspended_previous;
+                    thread_ptr->ace_os_thread_suspended_previous =  previous_thread;
+                    previous_thread->ace_os_thread_suspended_next = thread_ptr;
+                    next_thread->ace_os_thread_suspended_previous = thread_ptr;
+                }
+
+                /* Set the state to suspended */
+                thread_ptr->ace_os_thread_state = ACE_OS_BYTE_MEMORY;
+
+                /* Set the suspending flag. */
+                thread_ptr->ace_os_thread_suspending = ACE_OS_TRUE;
+
+                /* Setup the timeout period. */
+                // thread_ptr->ace_os_thread_timer.ace_os_timer_internal_remaining_ticks = wait_option;
+
+                /* Temporarily disable preemption. */
+                ace_os_thread_preempt_disable++;
+
+                /* Restore interrupts */
+                ACE_OS_RESTORE
+
+                /* Call actual thead suspension routine. */
+                ace_os_thread_system_suspend(thread_ptr);
+
+                status = thread_ptr->ace_os_thread_suspend_status;
             }
         }
         else
@@ -166,9 +224,10 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
     return status;
 }
 
-VOID ace_os_byte_pool_clenup()
+VOID ace_os_byte_pool_cleanup(ACE_OS_THREAD *thread_ptr, ULONG suspension_sequence)
 {
-
+    (VOID)thread_ptr;
+    suspension_sequence ++;
 }
 
 UINT ace_os_byte_pool_create(ACE_OS_BYTE_POOL *pool_ptr, CHAR *name_ptr, VOID *pool_start, ULONG pool_size)

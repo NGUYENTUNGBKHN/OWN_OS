@@ -1,5 +1,7 @@
 #include "stm32f746.h"
 
+uint32_t systick_cycles;
+
 #if defined(LAB4_USE) || defined(LAB5_USE)
 uint32_t SystemCoreClock = 216000000UL;
 
@@ -86,4 +88,6 @@ void SystemInit(void)
 #if defined(LAB4_USE) || defined(LAB5_USE)
     SystemClock_Config();
 #endif /* LAB4_USE || LAB5_USE */
+    
+    systick_cycles = (16000000UL / 100) - 1U;
 }

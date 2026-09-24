@@ -35,6 +35,7 @@ function(add_ace_lab LAB_NAME)
         common/system_stm32f746.c
         common/itm.c
         common/syscalls.c
+        common/ace_os_initialize_low.S
         ${APP_C_SRC}
         ${APP_ASM_S_SRC}
         ${ACE_OS_C_SRC}

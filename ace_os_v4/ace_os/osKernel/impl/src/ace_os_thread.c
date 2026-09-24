@@ -451,7 +451,7 @@ UINT ace_os_thread_sleep(ULONG timer_ticks)
             thread_ptr->ace_os_thread_suspending = ACE_OS_TRUE;
 
             /* Initialize the status to successful. */
-            // thread_ptr->suspe
+            thread_ptr->ace_os_thread_suspend_status = ACE_OS_SUCCESS;
 
             /* Temporaily disable preemption. */
             ace_os_thread_preempt_disable ++;
@@ -463,7 +463,7 @@ UINT ace_os_thread_sleep(ULONG timer_ticks)
             ace_os_thread_system_suspend(thread_ptr);
 
             /* Return status to the caller */
-            status = ACE_OS_SUCCESS;
+            status = thread_ptr->ace_os_thread_suspend_status;
         }
     }
 

@@ -107,6 +107,31 @@ extern "C"
 ************************************************************************************************************************
 */
 
+/* Define the common internal timer control block. */
+typedef struct ACE_OS_TIMER_INTERNAL_STRUCT
+{
+    /* Define the remianing ticks and re-initialization tick value. */
+    ULONG       ace_os_timer_internal_remaining_ticks;
+    ULONG       ace_os_timer_internal_re_initialize_ticks;
+
+    /* Define the timout function and timeout function parameter */
+    VOID        (*ace_os_timer_internal_timout_function)(ULONG id);
+    ULONG       ace_os_timer_internal_timeout_param;
+
+    /* Define the next and previous internal link pointer for active
+        internal timers. */
+    struct ACE_OS_TIMER_INTERNAL_STRUCT
+                *ace_os_timer_internal_active_next,
+                *ace_os_timer_internal_active_previous;
+
+    /* Keep track of the pointer to the head of this list as well. */
+    struct ACE_OS_TIMER_INTERNAL_STRUCT
+                **ace_os_timer_internal_list_head;
+
+    /* Define optional extension to internal timer control block. */
+
+} ACE_OS_TIMER_INTERNAL;
+
 /* Define the block memory pool structure utilized by the application.  */
 
 typedef struct ACE_OS_BLOCK_POOL_STRUCT
@@ -182,9 +207,9 @@ typedef struct ACE_OS_BYTE_POOL_STRUCT
    
    /* Define the byte pool suspension list head along with a count of
       how many threads are suspended. */
-   struct ACE_OS_BYTE_POOL_STRUCT
+   struct ACE_OS_THREAD_STRUCT
                *ace_os_byte_pool_suspension_list;
-   UINT        ace_os_byte_pool_suspension_count;
+   UINT        ace_os_byte_pool_suspended_count;
 
    /* Define the created list next and previous pointer. */
    struct ACE_OS_BYTE_POOL_STRUCT
@@ -222,14 +247,46 @@ typedef struct ACE_OS_THREAD_STRUCT
     UINT        ace_os_thread_suspending;               /* Thread suspending flag */
     UINT        ace_os_thread_preempt_threshold;        /* Preemption threshold. */
 
+   
+    /* Define the thread's entry point and input parameter.  */
+    VOID        (*ace_os_thread_entry)(ULONG id);
+    ULONG       ace_os_thread_entry_params;
+
+    /* Define the thread's timer block. This is used for thread
+        sleep and timeout requests. */
+    ACE_OS_TIMER_INTERNAL   ace_os_thread_timer;
+        
+    /* Define the thread's cleanup function and associated data. This
+        is used to cleanup various data structures when a thread
+        suspension is lefted or terminated either by the user or
+        a timeout.  */
+    VOID        (*ace_os_thread_suspend_cleanup)(struct ACE_OS_THREAD_STRUCT *thread_ptr, 
+                                                        ULONG suspension_sequence);
+    VOID        *ace_os_thread_suspend_control_block;
+    struct ACE_OS_THREAD_STRUCT
+                *ace_os_thread_suspended_next,
+                *ace_os_thread_suspended_previous;
+    ULONG       ace_os_thread_suspend_info;
+    VOID        *ace_os_thread_additional_suspend_info;
+    UINT        ace_os_thread_suspend_option;
+    UINT        ace_os_thread_suspend_status;
+
+    /* Define the second port externsion in the thread control block. This
+        is typically defined to whitespace or a pointer type in ace_os_port.h */
+    
     /* Define pointers to the next and previous threads in the
        created list.  */
     struct ACE_OS_THREAD_STRUCT
                 *ace_os_thread_created_next,
                 *ace_os_thread_created_previous;
+    
+    /* Define the application callback routine used to notify the application when
+        the thread is entered or exits. */
+    VOID        (*ace_os_thread_entry_exit_notify)(struct ACE_OS_THREAD_STRUCT *thread_ptr, UINT type);
 
-    VOID        (*ace_os_thread_entry)(ULONG id);
-    ULONG       ace_os_thread_entry_params;
+    /* Define suspension sequence number. This is used to ensure suspension is still valid when 
+        cleanup routine executes. */
+    ULONG       ace_os_thread_suspension_sequence;
 
 }ACE_OS_THREAD;
 

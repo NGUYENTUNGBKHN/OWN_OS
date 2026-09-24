@@ -55,4 +55,6 @@ SECTIONS
         *(.note*)
         *(.comment*)
     }
+
+    __RAM_segment_used_end__ = .;
 }

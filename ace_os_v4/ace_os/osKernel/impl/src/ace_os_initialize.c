@@ -50,6 +50,8 @@ VOID    *ace_os_initialize_unused_memory;
 
 volatile ULONG ace_os_thread_system_state = ACE_OS_INITIALIZE_IN_PROGRESS;
 
+VOID    *ace_os_thread_system_stack_ptr;
+
 /***************************************************************************************************************
 **                                         INTERNAL FUNCTION PROTOTYPES
 ***************************************************************************************************************/
@@ -80,7 +82,7 @@ VOID ace_os_initialize_kernel_enter(VOID)
 
         /* Invoke the low-level initialization to handle all processor specific
             initialization issues. */
-        // ace_os_initialize_low_level();
+        ace_os_initialize_low_level();
 
         /* Invoke the high-level initialization to exercise all of the ThreadX
             components and the application's initialization function. */
