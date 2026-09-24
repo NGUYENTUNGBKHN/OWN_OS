@@ -131,7 +131,27 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
         /* Determine if the request specifies suspension. */
         if (wait_option != ACE_OS_NO_WAIT)
         {
+            /* Determine if the preempt disable flag is non-zero. */
+            if (ace_os_thread_preempt_disable != ((UINT) 0))
+            {
+                /* Suspenion is not allowed if the preempt disable flag is non-zero at this point - 
+                    return error completion */
+                status = ACE_OS_NO_MEMORY;
 
+                /* Restore interrupts. */
+                ACE_OS_RESTORE
+            }
+            else
+            {
+                /* Prepare for suspenion of this thread. */
+
+                /* Setup cleanup routine pointer */
+                // thread_ptr->ace_os_thread_suspend_cleanup = &(ace_os_byte_pool_cleanup);
+
+                /* Setup cleanup information, i.e. this pool control
+                    block. */
+                // thread_ptr->
+            }
         }
         else
         {
