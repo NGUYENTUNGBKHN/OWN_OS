@@ -46,5 +46,5 @@
         "*.h": "c",
         "cstdint": "c"
     },
-    "C_Cpp.default.compilerPath": "c:/gcc-arm-none-eabi/bin/arm-none-eabi-gcc.exe",
+    "C_Cpp.default.compilerPath": "d:\\Toolchain_2\\bin\\arm-none-eabi-gcc.exe",
 }

@@ -43,6 +43,17 @@ typedef unsigned short              USHORT;
 #define ACE_OS_MAX_PRIORITIES   32
 #endif 
 
+/* Define the system timer thread's default stack size and priority.  These are only applicable
+   if ACE_OS_TIMER_PROCESS_IN_ISR is not defined.  */
+
+#ifndef ACE_OS_TIMER_THREAD_STACK_SIZE
+#define ACE_OS_TIMER_THREAD_STACK_SIZE      1024        /* Default timer thread stack size */
+#endif
+
+#ifndef ACE_OS_TIMER_THREAD_PRIORITY
+#define ACE_OS_TIMER_THREAD_PRIORITY            0             /* Default timer thread priority    */
+#endif
+
 #ifndef ACE_OS_THREAD_GET_SYSTEM_STATE
 
 #if defined(__GNUC__)

@@ -453,6 +453,9 @@ UINT ace_os_thread_sleep(ULONG timer_ticks)
             /* Initialize the status to successful. */
             thread_ptr->ace_os_thread_suspend_status = ACE_OS_SUCCESS;
 
+            /* Setup the timeout period. */
+            thread_ptr->ace_os_thread_timer.ace_os_timer_internal_re_initialize_ticks = timer_ticks; 
+
             /* Temporaily disable preemption. */
             ace_os_thread_preempt_disable ++;
 

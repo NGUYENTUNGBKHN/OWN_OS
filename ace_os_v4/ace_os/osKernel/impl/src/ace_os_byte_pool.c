@@ -532,7 +532,7 @@ UCHAR *ace_os_byte_pool_search(ACE_OS_BYTE_POOL *pool_ptr, ULONG memory_size)
             if ((available_bytes - memory_size) >= ((ULONG) ACE_OS_BYTE_BLOCK_MIN))
             {
                 /* Split the block. */
-                next_ptr = ACE_OS_UCHAR_POINTER_ADD(current_ptr, (memory_size + ((sizeof(UCHAR*)) * (sizeof(ALIGN_TYPE)))));
+                next_ptr = ACE_OS_UCHAR_POINTER_ADD(current_ptr, (memory_size + ((sizeof(UCHAR*)) + (sizeof(ALIGN_TYPE)))));
 
                 /* Setup the new free block. */
                 next_block_link_ptr = ACE_OS_UCHAR_TO_INDIRECT_UCHAR_POINTER_CONVERT(next_ptr);

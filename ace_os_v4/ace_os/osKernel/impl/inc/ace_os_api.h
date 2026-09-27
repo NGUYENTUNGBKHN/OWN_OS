@@ -34,6 +34,7 @@ extern "C"
 #define ACE_OS_EMPTY                        ((ULONG)  0)
 #define ACE_OS_AUTO_START                   ((UINT)   1)
 #define ACE_OS_DONT_START                   ((UINT)   0)
+#define ACE_OS_NO_TIME_SLICE                ((ULONG)  0)
 #define ACE_OS_NULL                         ((void*)  0)
 #define ACE_OS_FALSE                        ((UINT)   0)
 #define ACE_OS_TRUE                         ((UINT)   1)
@@ -131,6 +132,26 @@ typedef struct ACE_OS_TIMER_INTERNAL_STRUCT
     /* Define optional extension to internal timer control block. */
 
 } ACE_OS_TIMER_INTERNAL;
+
+
+/* Define the timer structure utilized by the application. */
+typedef struct ACE_OS_TIMER_STRUCT
+{
+    /* Define the timer ID used for error checking.  */
+    ULONG               ace_os_timer_id;
+
+    /* Define the timer's name.  */
+    CHAR                *ace_os_timer_name;
+
+    /* Define the actual contents of the timer.  This is the block that
+       is used in the actual timer expiration processing.  */
+    ACE_OS_TIMER_INTERNAL   tx_timer_internal;
+
+    /* Define the pointers for the created list.  */
+    struct TX_TIMER_STRUCT
+                        *ace_os_timer_created_next,
+                        *ace_os_timer_created_previous;
+}ACE_OS_TIMER;
 
 /* Define the block memory pool structure utilized by the application.  */
 
@@ -391,6 +412,8 @@ VOID ace_os_timer_initialize(VOID);
 #define ACE_OS_ULONG_POINTER_SUB(a, b)                         (((ULONG *)(a)) - ((UINT)(b)))
 #define ACE_OS_UCHAR_POINTER_DIF(a, b)                         ((ULONG)(((UCHAR *) (a)) - ((UCHAR *) (b))))
 #define ACE_OS_ULONG_POINTER_DIF(a, b)                         ((ULONG)(((ULONG *) (a)) - ((ULONG *) (b))))
+#define ACE_OS_TIMER_POINTER_DIFF(a,b)                         ((ULONG)(((ACE_OS_TIMER_INTERNAL **) (a)) - ((ACE_OS_TIMER_INTERNAL **) (b))))
+#define ACE_OS_TIMER_POINTER_ADD(a,b)                          (((ACE_OS_TIMER_INTERNAL **) (a)) + ((ULONG) (b)))
 /* Convert void between char */
 #define ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(tmp)              ((UCHAR *) ((VOID *) (tmp)))
 #define ACE_OS_UCHAR_TO_VOID_POINTER_CONVERT(tmp)              ((VOID *) (tmp))
@@ -403,7 +426,7 @@ VOID ace_os_timer_initialize(VOID);
 #define ACE_OS_BYTE_POOL_TO_UCHAR_POINTER_CONVERT(temp)        ((UCHAR *) ((VOID *) (temp)))
 #define ACE_OS_UCHAR_TO_ALIGN_TYPE_POINTER_CONVERT(temp)       ((ALIGN_TYPE *) ((VOID *) (temp)))
 
-
+#define ACE_OS_CONST_CHAR_TO_CHAR_POINTER_CONVERT(temp)        ((CHAR *) ((VOID *) (temp)))
 
 
 
