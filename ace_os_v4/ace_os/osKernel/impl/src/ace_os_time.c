@@ -38,6 +38,16 @@
 **                                        INTERNAL VARIABLE DEFINITIONS
 ***************************************************************************************************************/
 
+/* Define the system clock value that is continually incremented by the
+   periodic timer interrupt processing.  */
+
+volatile ULONG      ace_os_timer_system_clock;
+
+/* Define the time-slice expiration flag.  This is used to indicate that a time-slice
+   has happened.  */
+
+UINT                ace_os_timer_expired_time_slice;
+
 /* Define the thread and application timer entry list. This list provide a direct access
     method for insertion of times less than ACE_OS_TIMER_ENTRIES. */
 
@@ -54,12 +64,10 @@ ACE_OS_TIMER_INTERNAL   **ace_os_timer_list_end;
 
 ACE_OS_TIMER_INTERNAL **ace_os_timer_current_ptr;
 
-/* Define the current tinme slice value. If non-zero, a time-slice is active
-    otherwise, the time_slice is not active. */
-    
-ULONG           ace_os_timer_time_slice;
+/* Define the timer expiration flag.  This is used to indicate that a timer
+   has expired.  */
 
-
+UINT            ace_os_timer_expired;
 
 /* Define the created timer list head pointer.  */
 
@@ -91,7 +99,10 @@ UINT            ace_os_timer_priority;
 
 ULONG           ace_os_timer_thread_stack_area[(((UINT) ACE_OS_TIMER_THREAD_STACK_SIZE)+((sizeof(ULONG))- ((UINT) 1)))/(sizeof(ULONG))];
 
-
+/* Define the current tinme slice value. If non-zero, a time-slice is active
+    otherwise, the time_slice is not active. */
+    
+ULONG           ace_os_timer_time_slice;
 
 /***************************************************************************************************************
 **                                         INTERNAL FUNCTION PROTOTYPES
@@ -213,19 +224,109 @@ UINT ace_os_timer_performance_system_info_get()
     return ACE_OS_SUCCESS;
 }
 
-VOID ace_os_timer_system_activate()
+VOID ace_os_timer_system_activate(ACE_OS_TIMER_INTERNAL *timer_ptr)
 {
 
 }
 
-VOID ace_os_timer_system_deactivate()
+VOID ace_os_timer_system_deactivate(ACE_OS_TIMER_INTERNAL *timer_ptr)
 {
 
 }
 
-VOID ace_os_timer_thread_entry()
+VOID ace_os_timer_thread_entry(ULONG timer_thread_input)
 {
+    ACE_OS_INTERRUPT_SAVE_AREA
 
+    ACE_OS_TIMER_INTERNAL   *expired_timers;
+    ACE_OS_TIMER_INTERNAL   *current_timer;
+    ACE_OS_TIMER_INTERNAL   *next_timer;
+    ACE_OS_TIMER_INTERNAL   *reactivate_timer;
+    ACE_OS_TIMER_INTERNAL   *previous_timer;
+
+    /* Make sure the timer input is correct. This also gets rid of the
+        silly compiler warings. */
+    if (timer_thread_input == ACE_OS_TIMER_ID)
+    {
+
+
+        /* Yes, valid therad entry, proceed.. */
+
+        /* Now go into an infinite loop to process timer expirations. */
+        while (ACE_OS_LOOP_FOREVER)
+        {
+            /* First, move the current list pointer and clear the timer
+                expired value. This allows the interrupt handling portion
+                to continue looking for timer expirations. */
+            ACE_OS_DISABLE
+
+            /* Save the current timer expiration list pointer */
+            expired_timers = *ace_os_timer_current_ptr;
+
+            /* Modify the head pointer in the first timer in the list, if there
+                is one. */
+            if (expired_timers != ACE_OS_NULL)
+            {
+                expired_timers->ace_os_timer_internal_list_head = &expired_timers;
+            } 
+
+            /* Set the current list pointer to NULL */
+            *ace_os_timer_current_ptr = ACE_OS_NULL;
+
+            /* Move the current pointer up one timer entry wrap if we get to 
+                the end of the list. */
+            ace_os_timer_current_ptr = ACE_OS_TIMER_POINTER_ADD(ace_os_timer_current_ptr, 1);
+            if (ace_os_timer_current_ptr == ace_os_timer_list_end)
+            {
+                ace_os_timer_current_ptr = ace_os_timer_list_start;
+            }
+
+            /* Clear the expired flag. */
+            ace_os_timer_expired = ACE_OS_FALSE;
+
+            /* Restore interrupt tempporarily. */
+            ACE_OS_RESTORE
+
+            /* Disable interrupts again. */
+            ACE_OS_DISABLE
+
+            /* Next, process the expiration of the associated timers at this
+                time slot. */
+            while (expired_timers != ACE_OS_NULL)
+            {
+                /* Something is on the list. Remove it and process the expiration. */
+                current_timer = expired_timers;
+
+                /* Pickup the next timer. */
+                next_timer = expired_timers->ace_os_timer_internal_active_next;
+
+                /* Set the reactivate_timer_to NULL */
+                reactivate_timer = ACE_OS_NULL;
+
+                /* Determine if this is the only timer. */
+                if (current_timer == next_timer)
+                {
+                    /* Yes, this is the only timer in the list. */
+
+                    /* Set the hread pointer to NULL. */
+                    expired_timers = ACE_OS_NULL;
+
+                }
+                else
+                {
+                    /* No, not the only expired timer. */
+
+                    /* Remove this timer from the expired list. */
+                    previous_timer = current_timer->ace_os_timer_internal_active_previous;
+                    next_timer->ace_os_timer_internal_active_previous = previous_timer;
+                    previous_timer->ace_os_timer_internal_active_next = next_timer;
+                }
+            }
+            
+
+        }
+        
+    }
 }
 
 /***************************************************************************************************************

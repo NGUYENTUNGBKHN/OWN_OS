@@ -55,6 +55,11 @@ TIMER_DECLARE   ACE_OS_TIMER_INTERNAL *ace_os_timer_list[ACE_OS_TIMER_ENTRIES];
 TIMER_DECLARE ACE_OS_TIMER_INTERNAL   **ace_os_timer_list_start;
 TIMER_DECLARE ACE_OS_TIMER_INTERNAL   **ace_os_timer_list_end;
 
+/* Define the current timer pointer in the list.  This pointer is moved sequentially
+   through the timer list by the timer interrupt handler.  */
+
+TIMER_DECLARE ACE_OS_TIMER_INTERNAL  **ace_os_timer_current_ptr;
+
 
 /* Define the created timer list head pointer.  */
 

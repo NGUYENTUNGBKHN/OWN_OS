@@ -414,6 +414,9 @@ VOID ace_os_timer_initialize(VOID);
 #define ACE_OS_ULONG_POINTER_DIF(a, b)                         ((ULONG)(((ULONG *) (a)) - ((ULONG *) (b))))
 #define ACE_OS_TIMER_POINTER_DIFF(a,b)                         ((ULONG)(((ACE_OS_TIMER_INTERNAL **) (a)) - ((ACE_OS_TIMER_INTERNAL **) (b))))
 #define ACE_OS_TIMER_POINTER_ADD(a,b)                          (((ACE_OS_TIMER_INTERNAL **) (a)) + ((ULONG) (b)))
+
+#define ACE_OS_LOOP_FOREVER                                    ((UINT) 1)
+
 /* Convert void between char */
 #define ACE_OS_VOID_TO_UCHAR_POINTER_CONVERT(tmp)              ((UCHAR *) ((VOID *) (tmp)))
 #define ACE_OS_UCHAR_TO_VOID_POINTER_CONVERT(tmp)              ((VOID *) (tmp))

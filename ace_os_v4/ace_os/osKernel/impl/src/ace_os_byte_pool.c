@@ -66,7 +66,7 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
     ACE_OS_THREAD   *previous_thread;
     ACE_OS_THREAD   *thread_ptr;
 
-    /* Round the memory sizer up to the next size that is ewnely divisible by
+    /* Round the memory size up to the next size that is ewnely divisible by
     an ALIGN_TYPE (this is typically a 32-bit ULONG). This guarantees proper alignment. */
     memory_size = (((memory_size + (sizeof(ALIGN_TYPE))) - ((ALIGN_TYPE) 1))/(sizeof(ALIGN_TYPE))) * (sizeof(ALIGN_TYPE));
 
@@ -165,7 +165,7 @@ UINT ace_os_byte_allocate(ACE_OS_BYTE_POOL *pool_ptr, VOID **memory_ptr, ULONG m
                 thread_ptr->ace_os_thread_suspension_sequence ++;
 
                 /* Pickup the number of suspend threads */
-                suspended_count = pool_ptr->ace_os_byte_pool_suspended_count ++;
+                suspended_count = pool_ptr->ace_os_byte_pool_suspended_count;
 
                 /* Increment the suspension count. */
                 (pool_ptr->ace_os_byte_pool_suspended_count)++;
