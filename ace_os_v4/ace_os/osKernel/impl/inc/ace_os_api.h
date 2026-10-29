@@ -111,7 +111,7 @@ extern "C"
 /* Define the common internal timer control block. */
 typedef struct ACE_OS_TIMER_INTERNAL_STRUCT
 {
-    /* Define the remianing ticks and re-initialization tick value. */
+    /* Define the remaining ticks and re-initialization tick value. */
     ULONG       ace_os_timer_internal_remaining_ticks;
     ULONG       ace_os_timer_internal_re_initialize_ticks;
 

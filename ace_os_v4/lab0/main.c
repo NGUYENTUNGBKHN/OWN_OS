@@ -29,9 +29,9 @@ VOID ace_os_application_define(VOID *first_unused_memory)
 {
     CHAR    *pointer;
 
-    (void) first_unused_memory;
+    // (void) first_unused_memory;
 
-    ace_os_byte_pool_create(&byte_pool_0, "byte_pool_0", memory_area, DEMO_BYTE_POOL_SIZE);
+    ace_os_byte_pool_create(&byte_pool_0, "byte_pool_0", first_unused_memory, DEMO_BYTE_POOL_SIZE);
 
     ace_os_byte_allocate(&byte_pool_0, (VOID **) &pointer, DEMO_STACK_SIZE, ACE_OS_NO_WAIT);
 

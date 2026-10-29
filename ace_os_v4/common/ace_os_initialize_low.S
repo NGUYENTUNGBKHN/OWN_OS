@@ -21,11 +21,10 @@ ace_os_initialize_low_level:
     /* Disable interrupt during ThreadX initialization.  */
     CPSID   i
 
-    /* Set base of available memory to end of non-initialised RAM areq.  */
     /* Set base of available memory to end of non-initialised RAM area.  */
-    LDR     r0, =ace_os_initialize_unused_memory       // Build address of unused memory pointer
+    LDR     r0, =ace_os_initialize_unused_memory    // Build address of unused memory pointer
     LDR     r1, =__RAM_segment_used_end__           // Build first free address
-    ADD     r1, r1, #4                              //
+    ADD     r1, r1, #4                              // 
     STR     r1, [r0]                                // Setup first unused memory pointer
 
     /* Setup Vector Table Offset Register.  */
